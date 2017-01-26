@@ -4,6 +4,7 @@ import json
 from app import app
 
 from app.forms import ContactForm, CreateSpottedForm, GetSpottedsForm
+from app.models import SpottedModel, UserModel
 
 from flask import abort, request
 
@@ -27,13 +28,14 @@ def spotted(spottedId):
 	if form.validate_on_submit():
 		userId = form.userId.data
 		anonimity = form.anonimity.data
-		spottedDate = form.spottedDate.data
 		longitude = form.longitude.data
 		latitude = form.latitude.data
 		message = form.message.data
 		#picture = form.picture.data
 
-		return json.dumps(request.form), 201
+		SpottedModel().createSpotted(userId=userId, anonimity=anonimity, latitude=latitude, longitude=longitude, message=message, picture=None)
+
+		return "Win", 201
 
 	return abort(400)
 

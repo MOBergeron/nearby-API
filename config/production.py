@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+ENVIRONMENT = "production"
+
 DEBUG = False
 WTF_CSRF_ENABLED = True
 

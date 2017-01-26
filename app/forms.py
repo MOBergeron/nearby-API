@@ -3,7 +3,7 @@ import cgi
 
 from flask_wtf import FlaskForm
 
-from wtforms import BooleanField, DateTimeField, DecimalField, IntegerField, StringField, TextAreaField
+from wtforms import BooleanField, DecimalField, IntegerField, StringField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length, NumberRange
 
 # Constants
@@ -31,7 +31,6 @@ class ContactForm(FlaskForm):
 class CreateSpottedForm(FlaskForm):
 	userId = StringField('userId', validators=[DataRequired(), escapeSpecialCharacters])
 	anonimity = BooleanField('anonimity', validators=[DataRequired()])
-	spottedDate = DateTimeField('spottedDate', validators=[DataRequired()])
 	longitude = DecimalField('longitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LONGITUDE, max=MAXIMUM_LONGITUDE)])
 	latitude = DecimalField('latitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LATITUDE, max=MAXIMUM_LATITUDE)])
 	message = TextAreaField('message', validators=[DataRequired(), Length(max=MAXIMUM_SPOTTED_MESSAGE_LENGTH), escapeSpecialCharacters])

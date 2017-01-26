@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+ENVIRONMENT = "development"
+
 DEBUG = True
 WTF_CSRF_ENABLED = False
 
