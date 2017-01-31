@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import os
+
 from app import app
 
 from flask_script import Command, Manager, Option
@@ -7,6 +9,38 @@ manager = Manager(app)
 
 class InvalidCommand(Exception):
 	pass
+
+class Install(Command):
+	def run(self):
+		import pip
+		import urllib2
+		from zipfile import ZipFile
+		from StringIO import StringIO
+		
+		dynamodbPath = app.config['DYNAMODB_PATH']
+
+		print("Checking if '{}' directory exists...".format(dynamodbPath))
+		if not os.path.exists(dynamodbPath):
+			print("Creating '{}' directory...".format(dynamodbPath))
+			os.makedirs(dynamodbPath)
+
+		print("Downloading DynamoDB, this may take a while...")
+		downloadedZipFile = urllib2.urlopen("https://s3-us-west-2.amazonaws.com/dynamodb-local/dynamodb_local_latest.zip").read()
+		zipFile = ZipFile(StringIO(downloadedZipFile))
+		print("Unzipping DynamoDB, to '{}' path...".format(dynamodbPath))
+
+		for fileName in zipFile.namelist():
+			destination = os.path.join(dynamodbPath, fileName)
+
+			if fileName.endswith('/'):
+				print("Creating '{}' folder...".format(destination))
+				os.makedirs(destination)
+			else:
+				print("Creating '{}'...".format(destination))
+				with open(destination, 'w') as f:	
+					f.write(zipFile.read(fileName))
+		zipFile.close()
+		print("Unzipping is done.")
 
 class Server(Command):
 
@@ -26,8 +60,6 @@ class Server(Command):
 
 	def run(self, environment, database):
 		from app.connection import DynamoDBConnection
-		# Load default configuration
-		app.config.from_object('config.default')
 		
 		# DB_REGION_NAME is set in config.default
 		DynamoDBConnection().setRegionName(app.config['DB_REGION_NAME'])
@@ -35,7 +67,7 @@ class Server(Command):
 		# Load development or production configuration
 		if environment.lower() in self.DEVELOPMENT_NAME_LIST:
 			app.config.from_object('config.development')
-			
+
 			if database.lower() == self.DATABASE_LOCAL_NAME:
 				# Set endpoint_url to local address and port
 				app.config['DB_ENDPOINT_URL'] = "http://127.0.0.1:8000"
@@ -77,8 +109,10 @@ class Server(Command):
 	def startDynamoDB(self):
 		from subprocess import call
 
-		command = 'java -Djava.library.path=./instance/dynamodb/DynamoDBLocal_lib -jar instance/dynamodb/DynamoDBLocal.jar -sharedDb -inMemory'
+		command = 'java -Djava.library.path=./{0}/DynamoDBLocal_lib -jar {0}/DynamoDBLocal.jar -sharedDb -inMemory'.format(app.config['DYNAMODB_PATH'])
 		call(command.split())
 
+
 # Add commands to the manager
+manager.add_command("install", Install())
 manager.add_command("runserver", Server())
