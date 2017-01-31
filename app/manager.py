@@ -12,7 +12,6 @@ class InvalidCommand(Exception):
 
 class Install(Command):
 	def run(self):
-		import pip
 		import urllib2
 		from zipfile import ZipFile
 		from StringIO import StringIO
@@ -37,7 +36,7 @@ class Install(Command):
 				os.makedirs(destination)
 			else:
 				print("Creating '{}'...".format(destination))
-				with open(destination, 'w') as f:	
+				with open(destination, 'wb') as f:	
 					f.write(zipFile.read(fileName))
 		zipFile.close()
 		print("Unzipping is done.")
@@ -94,9 +93,12 @@ class Server(Command):
 		else:
 			raise InvalidCommand("Option environment is incompatible with the accepted values. Accepted : ['{}']".format("', '".join(self.ENVIRONMENT_OPTIONS)))
 
-		# Load local configuration
-		app.config.from_pyfile('config.py')
-		
+		try:
+			# Load local configuration
+			app.config.from_pyfile('config.py')
+		except Exception as e:
+			print(e.message)
+
 		from app import views
 
 		# Start the app

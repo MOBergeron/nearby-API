@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+import json
+import urllib2
+
 from uuid import uuid4
 
 from app.connection import DynamoDBConnection
@@ -69,4 +72,8 @@ class SpottedModel(object):
 		return SpottedModel.__getSpotteds(userId=userId, latitude=None, longitude=None, radius=None, locationOnly=None)
 
 class UserModel(object):
-	pass		
+	
+	@staticmethod
+	def validateFacebookToken(url, token, accessToken):
+		res = urllib2.urlopen(url.format(input_token=token, access_token=accessToken))
+		return json.loads(res.read())['data']['is_valid']

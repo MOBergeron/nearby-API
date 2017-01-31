@@ -11,6 +11,7 @@ from flask import abort, request
 
 @app.route("/v1/login", methods=['POST'])
 def login():
+	UserModel().validateFacebookToken(app.config['FACEBOOK_DEBUG_URL'], "TOKEN", app.config['FACEBOOK_ACCESS_TOKEN'])
 	return "Login"
 
 @app.route("/v1/register", methods=['POST'])
