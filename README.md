@@ -14,8 +14,8 @@ Then, run the following command to install dependencies :
 
 Make `run.sh` executable with `chmod +x run.sh`.
 
-Once this is done, you can either install or not DynamoDB by executing the following `./run.sh install`. If not, download it by yourself and unzip it in `instance/dynamodb/` for the server to work.
+Once this is done, you can either install or not DynamoDB by executing the following `./run.py install`. If not, download it by yourself and unzip it in `instance/dynamodb/` for the server to work.
 
-After all of this, you are ready to run the server with `./run.sh runserver -e dev -d local` which runs the server with the development environment and starts DynamoDB locally
+After all of this, you are ready to run the server with `./run.py runserver -e dev -d local` which runs the server with the development environment and starts DynamoDB locally
 
 P.S : You won't be able to run the server on production since you are missing important keys that are not in the repository.
