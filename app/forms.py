@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 import cgi
 
+from app.utils import validateUuid
+
 from flask_wtf import FlaskForm
 
 from wtforms import BooleanField, DecimalField, IntegerField, StringField, TextAreaField
-from wtforms.validators import DataRequired, Email, Length, NumberRange
+from wtforms.validators import DataRequired, Email, Length, NumberRange, ValidationError
 
 # Constants
 MINIMUM_LONGITUDE = -90
@@ -24,12 +26,16 @@ DEFAULT_LOCATION_ONLY = False
 def escapeSpecialCharacters(form, field):
 	field.data = cgi.escape(field.data, True)
 
+def validateUuidField(form, field):
+	if not validateUuid(field.data):
+		raise ValidationError("UserID must be a valid UUID.")
+
 class ContactForm(FlaskForm):
 	email = StringField('Email', validators=[DataRequired(), Email()])
 	message = TextAreaField('Message', validators=[DataRequired(), Length(max=MAXIMUM_CONTACT_MESSAGE_LENGTH), escapeSpecialCharacters])
 
 class CreateSpottedForm(FlaskForm):
-	userId = StringField('userId', validators=[DataRequired(), escapeSpecialCharacters])
+	userId = StringField('userId', validators=[DataRequired(), validateUuidField, escapeSpecialCharacters])
 	anonimity = BooleanField('anonimity', validators=[DataRequired()])
 	longitude = DecimalField('longitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LONGITUDE, max=MAXIMUM_LONGITUDE)])
 	latitude = DecimalField('latitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LATITUDE, max=MAXIMUM_LATITUDE)])

@@ -1,5 +1,10 @@
 #!/usr/bin/env python
+from uuid import uuid4
+
 from app.connection import DynamoDBConnection
+
+from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 
 class SpottedModel(object):
 
@@ -9,9 +14,10 @@ class SpottedModel(object):
 			# Save it to S3, then keep the picture link to save it in the table.
 			pass
 
-		response = DynamoDBConnection().getSpottedTable().put_item(
+		spottedId = str(uuid4())
+		DynamoDBConnection().getSpottedTable().put_item(
 			Item={
-				'spottedId': "yolo",
+				'spottedId': spottedId,
 				'userId': userId,
 				'anonimity': anonimity,
 				'latitude': latitude,
@@ -21,47 +27,46 @@ class SpottedModel(object):
 			}
 		)
 
-		return response
+		return spottedId
 
 	@staticmethod
 	def getSpottedBySpottedId(spottedId):
-		res = {}
+		res = False
+
 		try:
-			response = DynamoDBConnection().getSpottedTable().get_item(
-				Key={
-					'spottedId': spottedId
-				}
+			response = DynamoDBConnection().getSpottedTable().query(
+				KeyConditionExpression=Key("spottedId").eq(spottedId)
 			)
 		except ClientError as e:
-			res['error'] = response['Error']['Message']
+			pass
 		else:
-			res['item'] = response['Item']
+			res = response['Items'][0]
 
 		return res
 
 	@staticmethod
 	def __getSpotteds(userId, latitude, longitude, radius, locationOnly):
-		res = {}
+		res = False
+
 		try:
-			response = DynamoDBConnection().getSpottedTable().get_item(
-				Key={
-					'userId': spottedId
-				}
+			response = DynamoDBConnection().getSpottedTable().query(
+				IndexName='userIdIndex',
+				KeyConditionExpression=Key("userId").eq(userId)
 			)
 		except ClientError as e:
-			res['error'] = response['Error']['Message']
+			pass
 		else:
-			res['item'] = response['Item']
+			res = response['Items']
 
 		return res
 
 	@staticmethod
 	def getSpotteds(latitude, longitude, radius, locationOnly):
-		return self.__getSpotteds(userId=None, latitude=latitude, longitude=longitude, radius=radius, locationOnly=locationOnly)
+		return SpottedModel.__getSpotteds(userId=None, latitude=latitude, longitude=longitude, radius=radius, locationOnly=locationOnly)
 
 	@staticmethod
 	def getSpottedsByUserId(userId):
-		return self.__getSpotteds(userId=userId, latitude=None, longitude=None, radius=None, locationOnly=None)
+		return SpottedModel.__getSpotteds(userId=userId, latitude=None, longitude=None, radius=None, locationOnly=None)
 
 class UserModel(object):
 	pass		

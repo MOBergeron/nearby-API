@@ -1,84 +1,105 @@
 #!/usr/bin/env python
 import boto3
 
-from app import app
-from app import Singleton
+from app.utils import Singleton
 
 class DynamoDBConnection(object):
 	__metaclass__ = Singleton
 
 	def __init__(self):
+		self.__dynamodb = None
 		self.__spottedTable = None
 		self.__userTable = None
-		self.__dynamodb = boto3.resource('dynamodb', region_name=app.config['DB_REGION_NAME'], endpoint_url=app.config['DB_ENDPOINT_URL'])
+		self.__region_name = None
+		self.__endpoint_url = None
 
-		# Create default tables on development environment
-		if app.config['ENVIRONMENT'] == "development":
-			self.__spottedTable = self.__dynamodb.Table("spotted")
+	def createLocalTables(self):
+		self.__getDynamoDBObject().create_table(
+			TableName='user',
+			KeySchema=[
+				{
+					'AttributeName': 'userId',
+					'KeyType': 'HASH'
+				}
+			],
+			AttributeDefinitions=[
+				{
+					'AttributeName': 'userId',
+					'AttributeType': 'S'
+				}
 
-			try:
-				self.__spottedTable.delete()
-			except:
-				pass
-			
-			self.__spottedTable = None
-			self.__userTable = self.__dynamodb.Table("user")
-			
-			try:
-				self.__userTable.delete()
-			except:
-				pass
-			
-			self.__userTable = None
+			],
+			ProvisionedThroughput={
+				'ReadCapacityUnits': 10,
+				'WriteCapacityUnits': 10
+			}
+		)
 
-			self.__dynamodb.create_table(
-				TableName='user',
-				KeySchema=[
+		self.__getDynamoDBObject().create_table(
+			TableName='spotted',
+			KeySchema=[
+				{
+					'AttributeName': 'spottedId',
+					'KeyType': 'HASH'
+				},
+				{
+					'AttributeName': 'userId',
+					'KeyType': 'RANGE'
+				}
+			],
+			AttributeDefinitions=[
+				{
+					'AttributeName': 'spottedId',
+					'AttributeType': 'S'
+				},
+				{
+					'AttributeName': 'userId',
+					'AttributeType': 'S'
+				}
+
+			],
+			ProvisionedThroughput={
+				'ReadCapacityUnits': 10,
+				'WriteCapacityUnits': 10
+			},
+			GlobalSecondaryIndexes=[
+			{
+				'IndexName': 'userIdIndex',
+				'KeySchema': [
 					{
 						'AttributeName': 'userId',
-						'KeyType': 'HASH'
-					}
+						'KeyType': 'HASH',
+					},
 				],
-				AttributeDefinitions=[
-					{
-						'AttributeName': 'userId',
-						'AttributeType': 'S'
-					}
-
-				],
-				ProvisionedThroughput={
-					'ReadCapacityUnits': 10,
-					'WriteCapacityUnits': 10
+				'Projection': {
+					'ProjectionType': 'ALL',
+				},
+				'ProvisionedThroughput': {
+					'ReadCapacityUnits': 2,
+					'WriteCapacityUnits': 2,
 				}
-			)
+			},
+		],
+		)
+		print("Local tables are created.")
 
-			self.__dynamodb.create_table(
-				TableName='spotted',
-				KeySchema=[
-					{
-						'AttributeName': 'spottedId',
-						'KeyType': 'HASH'
-					}
-				],
-				AttributeDefinitions=[
-					{
-						'AttributeName': 'spottedId',
-						'AttributeType': 'S'
-					}
-
-				],
-				ProvisionedThroughput={
-					'ReadCapacityUnits': 10,
-					'WriteCapacityUnits': 10
-				}
-			)
+	def __getDynamoDBObject(self):
+		if self.__dynamodb is None:
+			self.__dynamodb = boto3.resource('dynamodb', region_name=self.__region_name, endpoint_url=self.__endpoint_url)
+		return self.__dynamodb
 
 	def getSpottedTable(self):
 		if self.__spottedTable is None:
-			self.__spottedTable = self.__dynamodb.Table("spotted")
+			self.__spottedTable = self.__getDynamoDBObject().Table("spotted")
 		return self.__spottedTable
 
 	def getUserTable(self):
 		if self.__userTable is None:
-			self.__userTable = self.__dynamodb.Table("user")
+			self.__userTable = self.__getDynamoDBObject().Table("user")
 		return self.__userTable
+
+	def setRegionName(self, region_name):
+		self.__region_name = region_name
+
+	def setEndpointUrl(self, endpoint_url):
+		self.__endpoint_url = endpoint_url
