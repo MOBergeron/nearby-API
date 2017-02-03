@@ -1,37 +1,59 @@
 #!/usr/bin/env python
 import json
 
+from functools import wraps
+
 from app import app
 
-from app.forms import ContactForm, CreateSpottedForm, GetSpottedsForm
+from app.forms import ContactForm, CreateSpottedForm, GetSpottedsForm, RegisterFacebookIdForm, RegisterGoogleIdForm
 from app.models import SpottedModel, UserModel
 from app.utils import DecimalEncoder, validateUuid
 
 from flask import abort, request
 
-@app.route("/v1/login", methods=['POST'])
-def login():
-	UserModel().validateFacebookToken(app.config['FACEBOOK_DEBUG_URL'], "TOKEN", app.config['FACEBOOK_ACCESS_TOKEN'])
-	return "Login"
+# Decorators
+def requireAuthenticate(f):
+	@wraps(f)
+	def decorated_function(*args, **kwargs):
+		auth = request.authorization
+		if auth:
+			provider, token = auth.password.split('|')
+			if validateUuid(auth.username) and provider in ['f','g']:
+				user = UserModel().getUser(auth.username)
+				if user:
+					if provider == 'f':
+						debugToken = UserModel().getDebugToken(token)
+						if user['facebookId'] == debugToken['user_id']:
+							return f(*args, **kwargs)
+					elif provider == 'g':
+						return f(*args, **kwargs)
+		return abort(401)
+	return decorated_function
 
-@app.route("/v1/register", methods=['POST'])
-def register():
-	return "Register"
+@app.route("/v1/register/facebook", methods=['POST'])
+def registerFacebook():
+	form = RegisterFacebookIdForm()
+	if form.validate_on_submit():
+		if UserModel().registerFacebookIdToUserId(form.userId.data, form.facebookId.data):
+			return "", 200
+			
+	return abort(400)
 
-@app.route("/v1/spotted", defaults={'spottedId': None}, methods=['GET', 'POST'])
-@app.route("/v1/spotted/<spottedId>", methods=['GET'])
-def spotted(spottedId):
+@app.route("/v1/register/google", methods=['POST'])
+def registerGoogle():
+	form = RegisterGoogleIdForm()
+	if form.validate_on_submit():
+		if UserModel().registerGoogleIdToUserId(form.userId.data, form.googleId.data):
+			return "", 200
+	
+	return abort(400)
+
+@app.route("/v1/spotted", defaults={'spottedId': None}, methods=['POST'])
+def createSpotted():
 	form = CreateSpottedForm()
 	
-	# Returns a specific spotted
-	if spottedId:
-		if validateUuid(spottedId):
-			res = SpottedModel.getSpottedBySpottedId(spottedId)
-			if res:
-				return json.dumps(res, cls=DecimalEncoder)
-
 	# Creates a spotted according to form data
-	elif form.validate_on_submit():
+	if form.validate_on_submit():
 		userId = form.userId.data
 		anonimity = form.anonimity.data
 		longitude = form.longitude.data
@@ -42,24 +64,26 @@ def spotted(spottedId):
 		res = SpottedModel.createSpotted(userId=userId, anonimity=anonimity, latitude=latitude, longitude=longitude, message=message, picture=None)
 		if res:
 			return json.dumps({"spottedId": res}), 201
+	
+	return abort(400)
+
+@app.route("/v1/spotted/<spottedId>", methods=['GET'])
+def spotted(spottedId):
+	# Returns a specific spotted
+	if spottedId:
+		if validateUuid(spottedId):
+			res = SpottedModel.getSpottedBySpottedId(spottedId)
+			if res:
+				return json.dumps(res, cls=DecimalEncoder)
 
 	return abort(400)
 
 @app.route("/v1/spotteds", defaults={'userId': None}, methods=['GET'])
-@app.route("/v1/spotteds/<userId>", methods=['GET'])
-def spotteds(userId):
+def spotteds():
 	form = GetSpottedsForm(request.args)
-	# Returns all spotteds to a specific userId
-	# NOTE : Make sure to only and only give this list if the user token correspond to the userId
-	# 	Unless it only returns the NOT anonimous ones.
-	if userId:
-		if validateUuid(userId):
-			res = SpottedModel.getSpottedsByUserId(userId)
-			if res:
-				return json.dumps(res, cls=DecimalEncoder)
 
 	# Returns all corresponding spotteds according to arguments
-	elif form.validate():
+	if form.validate():
 		longitude = form.longitude.data
 		latitude = form.latitude.data
 		radius = form.radius.data
@@ -70,6 +94,19 @@ def spotteds(userId):
 		res = SpottedModel.getSpotteds(latitude=latitude, longitude=longitude, radius=radius, locationOnly=locationOnly)
 		if res:
 			return json.dumps(res, cls=DecimalEncoder)
+
+	return abort(400)
+
+@app.route("/v1/spotteds/<userId>", methods=['GET'])
+def spottedsByUserId(userId):
+	# Returns all spotteds to a specific userId
+	# NOTE : Make sure to only and only give this list if the user token correspond to the userId
+	# 	Unless it only returns the NOT anonimous ones.
+	if userId:
+		if validateUuid(userId):
+			res = SpottedModel.getSpottedsByUserId(userId)
+			if res:
+				return json.dumps(res, cls=DecimalEncoder)
 
 	return abort(400)
 

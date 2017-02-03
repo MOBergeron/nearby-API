@@ -47,3 +47,11 @@ class GetSpottedsForm(FlaskForm):
 	latitude = DecimalField('latitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LATITUDE, max=MAXIMUM_LATITUDE)])
 	radius = IntegerField('radius', validators=[DataRequired(), NumberRange(min=MINIMUM_RADIUS, max=MAXIMUM_RADIUS)])
 	locationOnly = BooleanField('locationOnly', default=DEFAULT_LOCATION_ONLY)
+
+class RegisterFacebookIdForm(FlaskForm):
+	userId = StringField('userId', validators=[DataRequired(), validateUuidField, escapeSpecialCharacters])
+	facebookId = StringField('facebookId', validators=[DataRequired(), escapeSpecialCharacters])
+
+class RegisterGoogleIdForm(FlaskForm):
+	userId = StringField('userId', validators=[DataRequired(), validateUuidField, escapeSpecialCharacters])
+	googleId = StringField('googleId', validators=[DataRequired(), escapeSpecialCharacters])
