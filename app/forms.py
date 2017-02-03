@@ -6,7 +6,7 @@ from app.utils import validateUuid
 from flask_wtf import FlaskForm
 
 from wtforms import BooleanField, DecimalField, IntegerField, StringField, TextAreaField
-from wtforms.validators import DataRequired, Email, Length, NumberRange, ValidationError
+from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional, ValidationError
 
 # Constants
 MINIMUM_LONGITUDE = -90
@@ -40,7 +40,8 @@ class CreateSpottedForm(FlaskForm):
 	longitude = DecimalField('longitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LONGITUDE, max=MAXIMUM_LONGITUDE)])
 	latitude = DecimalField('latitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LATITUDE, max=MAXIMUM_LATITUDE)])
 	message = TextAreaField('message', validators=[DataRequired(), Length(max=MAXIMUM_SPOTTED_MESSAGE_LENGTH), escapeSpecialCharacters])
-	#picture = Field()
+	
+	#picture = Field('picture', validators=[Optional()])
 
 class GetSpottedsForm(FlaskForm):
 	longitude = DecimalField('longitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LONGITUDE, max=MAXIMUM_LONGITUDE)])
@@ -49,9 +50,12 @@ class GetSpottedsForm(FlaskForm):
 	locationOnly = BooleanField('locationOnly', default=DEFAULT_LOCATION_ONLY)
 
 class RegisterFacebookIdForm(FlaskForm):
-	userId = StringField('userId', validators=[DataRequired(), validateUuidField, escapeSpecialCharacters])
 	facebookId = StringField('facebookId', validators=[DataRequired(), escapeSpecialCharacters])
+	token = StringField('token', validators=[DataRequired()])
+	
+	userId = StringField('userId', validators=[Optional(), validateUuidField, escapeSpecialCharacters])
 
 class RegisterGoogleIdForm(FlaskForm):
-	userId = StringField('userId', validators=[DataRequired(), validateUuidField, escapeSpecialCharacters])
 	googleId = StringField('googleId', validators=[DataRequired(), escapeSpecialCharacters])
+	
+	userId = StringField('userId', validators=[Optional(), validateUuidField, escapeSpecialCharacters])

@@ -76,13 +76,13 @@ class SpottedModel(object):
 class UserModel(object):
 
 	@staticmethod
-	def createUser():
+	def createUser(facebookId=None, googleId=None):
 		userId = str(uuid4())
 		DynamoDBConnection().getUserTable().put_item(
 			Item={
 				'userId': userId,
-				'facebookId': None,
-				'googleId': None
+				'facebookId': facebookId,
+				'googleId': googleId
 			}
 		)
 
@@ -114,6 +114,10 @@ class UserModel(object):
 class FacebookModel(UserModel):
 
 	@staticmethod
+	def createUserWithFacebook(facebookId):
+		return UserModel().createUser(facebookId=facebookId)
+
+	@staticmethod
 	def getDebugToken(token):
 		url = app.config['FACEBOOK_DEBUG_URL']
 		accessToken = app.config['FACEBOOK_ACCESS_TOKEN']
@@ -123,21 +127,20 @@ class FacebookModel(UserModel):
 	@staticmethod
 	def registerFacebookIdToUserId(userId, facebookId):
 		res = False
-		if not UserModel().doesUserExist(userId):
-			UserModel().createUser(userId)
 		
-		if FacebookModel().validateUserIdAndFacebookIdLink(userId, None):
-			DynamoDBConnection().getUserTable().update_item(
-				Key={
-					'userId': userId
-				},
-				UpdateExpression="set facebookId = :facebookId",
-				ExpressionAttributeValues={
-					':facebookId': facebookId
-				},
-				ReturnValues="UPDATED_NEW"
-			)
-			res = True
+		if UserModel().doesUserExist(userId):
+			if FacebookModel().validateUserIdAndFacebookIdLink(userId, None):
+				DynamoDBConnection().getUserTable().update_item(
+					Key={
+						'userId': userId
+					},
+					UpdateExpression="set facebookId = :facebookId",
+					ExpressionAttributeValues={
+						':facebookId': facebookId
+					},
+					ReturnValues="UPDATED_NEW"
+				)
+				res = True
 		
 		return res
 
