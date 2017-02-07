@@ -53,21 +53,24 @@ class Server(Command):
 	DATABASE_OPTIONS = [DATABASE_LOCAL_NAME, DATABASE_REMOTE_NAME]
 
 	option_list = [
-		Option('--environment','-e', dest='environment', default="dev"),
-		Option('--database','-d', dest='database', default="local")
+		Option('--environment','-e', dest='environmentArg', default="dev"),
+		Option('--database','-d', dest='databaseArg', default="local"),
+		Option('--host','-h', dest='hostArg', default=None),
+		Option('--port','-p', dest='portArg', default=None),
+		Option('--ssl','-s', dest='sslArg', default=False)
 	]
 
-	def run(self, environment, database):
+	def run(self, environmentArg, databaseArg, hostArg, portArg, sslArg):
 		from app.connection import DynamoDBConnection
 		
 		# DB_REGION_NAME is set in config.default
 		DynamoDBConnection().setRegionName(app.config['DB_REGION_NAME'])
 
 		# Load development or production configuration
-		if environment.lower() in self.DEVELOPMENT_NAME_LIST:
+		if environmentArg.lower() in self.DEVELOPMENT_NAME_LIST:
 			app.config.from_object('config.development')
 
-			if database.lower() == self.DATABASE_LOCAL_NAME:
+			if databaseArg.lower() == self.DATABASE_LOCAL_NAME:
 				# Set endpoint_url to local address and port
 				app.config['DB_ENDPOINT_URL'] = "http://127.0.0.1:8000"
 				DynamoDBConnection().setEndpointUrl(app.config['DB_ENDPOINT_URL'])
@@ -80,14 +83,14 @@ class Server(Command):
 				# Create local tables
 				DynamoDBConnection().createLocalTables()
 
-			elif database.lower() == self.DATABASE_REMOTE_NAME:
+			elif databaseArg.lower() == self.DATABASE_REMOTE_NAME:
 				# Nothing to do here yet.
 				pass
 
 			else:
 				raise InvalidCommand("Option database is incompatible with accepted values. Accepted values are : ['{}']".format("', '".join(self.DATABASE_OPTIONS)))
 
-		elif environment.lower() in self.PRODUCTION_NAME_LIST:
+		elif environmentArg.lower() in self.PRODUCTION_NAME_LIST:
 			app.config.from_object('config.production')
 
 		else:
@@ -101,10 +104,26 @@ class Server(Command):
 
 		from app import views
 
+		if hostArg:
+			host = hostArg
+		else:
+			host = app.config['HOST']
+
+		if portArg:
+			port = portArg
+		else:
+			port = app.config['PORT']
+
+		if sslArg and not sslArg == 'False':
+			sslContext = ('cert.pem','privkey.pem')
+		else:
+			sslContext = None
+
 		# Start the app
 		app.run(debug=app.config['DEBUG'],
-			host=app.config['HOST'],
-			port=app.config['PORT'],
+			host=host,
+			port=port,
+			ssl_context=sslContext,
 			use_reloader=False,
 			threaded=True)
 
