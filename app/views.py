@@ -51,7 +51,7 @@ def loginGoogle():
 def registerFacebook():
 	form = RegisterFacebookIdForm()
 	if form.validate_on_submit():
-		facebookToken = FacebookModeletTokenValidation(form.token.data)
+		facebookToken = FacebookModel.getTokenValidation(form.token.data)
 		if facebookToken['is_valid'] and form.facebookId.data == facebookToken['user_id']:
 			if form.userId.data:
 				if FacebookModel.registerFacebookIdToUserId(form.userId.data, form.facebookId.data):
