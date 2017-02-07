@@ -49,6 +49,10 @@ class GetSpottedsForm(FlaskForm):
 	radius = IntegerField('radius', validators=[DataRequired(), NumberRange(min=MINIMUM_RADIUS, max=MAXIMUM_RADIUS)])
 	locationOnly = BooleanField('locationOnly', default=DEFAULT_LOCATION_ONLY)
 
+class LoginWithFacebookForm(FlaskForm):
+	facebookId = StringField('facebookId', validators=[DataRequired(), escapeSpecialCharacters])
+	token = StringField('token', validators=[DataRequired()])
+
 class RegisterFacebookIdForm(FlaskForm):
 	facebookId = StringField('facebookId', validators=[DataRequired(), escapeSpecialCharacters])
 	token = StringField('token', validators=[DataRequired()])

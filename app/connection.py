@@ -26,13 +26,54 @@ class DynamoDBConnection(object):
 				{
 					'AttributeName': 'userId',
 					'AttributeType': 'S'
+				},
+				{
+					'AttributeName': 'facebookId',
+					'AttributeType': 'S'
+				},
+				{
+					'AttributeName': 'googleId',
+					'AttributeType': 'S'
 				}
-
 			],
 			ProvisionedThroughput={
 				'ReadCapacityUnits': 10,
 				'WriteCapacityUnits': 10
-			}
+			},
+			GlobalSecondaryIndexes=[
+				{
+					'IndexName': 'facebookIdIndex',
+					'KeySchema': [
+						{
+							'AttributeName': 'facebookId',
+							'KeyType': 'HASH',
+						},
+					],
+					'Projection': {
+						'ProjectionType': 'KEYS_ONLY',
+					},
+					'ProvisionedThroughput': {
+						'ReadCapacityUnits': 2,
+						'WriteCapacityUnits': 2,
+					}
+				},
+				{
+					'IndexName': 'googleIdIndex',
+					'KeySchema': [
+						{
+							'AttributeName': 'googleId',
+							'KeyType': 'HASH',
+						},
+					],
+					'Projection': {
+						'ProjectionType': 'KEYS_ONLY',
+					},
+					'ProvisionedThroughput': {
+						'ReadCapacityUnits': 2,
+						'WriteCapacityUnits': 2,
+					}
+				}
+			]
 		)
 
 		self.__getDynamoDBObject().create_table(
@@ -63,23 +104,23 @@ class DynamoDBConnection(object):
 				'WriteCapacityUnits': 10
 			},
 			GlobalSecondaryIndexes=[
-			{
-				'IndexName': 'userIdIndex',
-				'KeySchema': [
-					{
-						'AttributeName': 'userId',
-						'KeyType': 'HASH',
+				{
+					'IndexName': 'userIdIndex',
+					'KeySchema': [
+						{
+							'AttributeName': 'userId',
+							'KeyType': 'HASH',
+						},
+					],
+					'Projection': {
+						'ProjectionType': 'ALL',
 					},
-				],
-				'Projection': {
-					'ProjectionType': 'ALL',
+					'ProvisionedThroughput': {
+						'ReadCapacityUnits': 2,
+						'WriteCapacityUnits': 2,
+					}
 				},
-				'ProvisionedThroughput': {
-					'ReadCapacityUnits': 2,
-					'WriteCapacityUnits': 2,
-				}
-			},
-		],
+			],
 		)
 		print("Local tables are created.")
 

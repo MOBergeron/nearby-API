@@ -5,7 +5,7 @@ from functools import wraps
 
 from app import app
 
-from app.forms import ContactForm, CreateSpottedForm, GetSpottedsForm, RegisterFacebookIdForm, RegisterGoogleIdForm
+from app.forms import ContactForm, CreateSpottedForm, GetSpottedsForm, LoginWithFacebookForm, RegisterFacebookIdForm, RegisterGoogleIdForm
 from app.models import SpottedModel, UserModel, FacebookModel, GoogleModel
 from app.utils import DecimalEncoder, validateUuid
 
@@ -22,59 +22,49 @@ def requireAuthenticate(f):
 				user = UserModel().getUser(auth.username)
 				if user:
 					if provider == 'f':
-						debugToken = FacebookModel().getDebugToken(token)
-						if debugToken['is_valid'] and user['facebookId'] == debugToken['user_id']:
+						facebookToken = FacebookModel().getTokenValidation(token)
+						if facebookToken['is_valid'] and user['facebookId'] == facebookToken['user_id']:
 							return f(*args, **kwargs)
 					elif provider == 'g':
 						return f(*args, **kwargs)
 		return abort(401)
 	return decorated_function
 
-def validateFacebook(f):
-	@wraps(f)
-	def decorated_function(*args, **kwargs):
-		auth = request.authorization
-		if auth:
-			provider, token = auth.password.split('|')
-			if validateUuid(auth.username) and provider in ['f','g']:
-				user = UserModel().getUser(auth.username)
-				if user:
-					if provider == 'f':
-						debugToken = FacebookModel().getDebugToken(token)
-						if debugToken['is_valid'] and user['facebookId'] == debugToken['user_id']:
-							return f(*args, **kwargs)
-					elif provider == 'g':
-						return f(*args, **kwargs)
+@app.route("/v1/login/facebook", methods=['POST'])
+def loginFacebook():
+	form = LoginWithFacebookForm()
+	if form.validate_on_submit():
+		facebookToken = FacebookModel().getTokenValidation(form.token.data)
+		if facebookToken['is_valid'] and form.facebookId.data == facebookToken['user_id']:
+			user = FacebookModel().getUserByFacebookId(form.facebookId.data)
+			if user:
+				return json.dumps({"userId": user['userId']})
+			return abort(400)
 		return abort(401)
-	return decorated_function
+	return abort(400)
 
-@app.route("/v1/test/facebook", methods=['GET'])
-@requireAuthenticate
-def testfacebook():
-	return "Yaa", 200
-
-@app.route("/v1/test/google", methods=['GET'])
-@requireAuthenticate
-def testgoogle():
-	return "Yaa", 200
+#@app.route("/v1/login/google", methods=['POST'])
+def loginGoogle():
+	pass
 
 @app.route("/v1/register/facebook", methods=['POST'])
 def registerFacebook():
 	form = RegisterFacebookIdForm()
 	if form.validate_on_submit():
-		debugToken = FacebookModel().getDebugToken(form.token.data)
-		if debugToken['is_valid'] and form.facebookId.data == debugToken['user_id']:
+		facebookToken = FacebookModel().getTokenValidation(form.token.data)
+		if facebookToken['is_valid'] and form.facebookId.data == facebookToken['user_id']:
 			if form.userId.data:
 				if FacebookModel().registerFacebookIdToUserId(form.userId.data, form.facebookId.data):
-					return "OK", 200
+					return "OK"
 			else:
 				userId = FacebookModel().createUserWithFacebook(form.facebookId.data)
-				return json.dumps({"userId": userId}), 201
+				if userId:
+					return json.dumps({"userId": userId}), 201
 			return abort(400)
 		return abort(401)
 	return abort(400)
 
-@app.route("/v1/register/google", methods=['POST'])
+#@app.route("/v1/register/google", methods=['POST'])
 def registerGoogle():
 	form = RegisterGoogleIdForm()
 	if form.validate_on_submit():
