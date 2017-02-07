@@ -53,6 +53,10 @@ class LoginWithFacebookForm(FlaskForm):
 	facebookId = StringField('facebookId', validators=[DataRequired(), escapeSpecialCharacters])
 	token = StringField('token', validators=[DataRequired()])
 
+class LoginWithGoogleForm(FlaskForm):
+	googleId = StringField('googleId', validators=[DataRequired(), escapeSpecialCharacters])
+	token = StringField('token', validators=[DataRequired()])
+
 class RegisterFacebookIdForm(FlaskForm):
 	facebookId = StringField('facebookId', validators=[DataRequired(), escapeSpecialCharacters])
 	token = StringField('token', validators=[DataRequired()])
@@ -61,5 +65,6 @@ class RegisterFacebookIdForm(FlaskForm):
 
 class RegisterGoogleIdForm(FlaskForm):
 	googleId = StringField('googleId', validators=[DataRequired(), escapeSpecialCharacters])
+	token = StringField('token', validators=[DataRequired()])
 	
 	userId = StringField('userId', validators=[Optional(), validateUuidField, escapeSpecialCharacters])

@@ -19,10 +19,10 @@ def requireAuthenticate(f):
 		if auth:
 			provider, token = auth.password.split('|')
 			if validateUuid(auth.username) and provider in ['f','g']:
-				user = UserModel().getUser(auth.username)
+				user = UserModel.getUser(auth.username)
 				if user:
 					if provider == 'f':
-						facebookToken = FacebookModel().getTokenValidation(token)
+						facebookToken = FacebookModel.getTokenValidation(token)
 						if facebookToken['is_valid'] and user['facebookId'] == facebookToken['user_id']:
 							return f(*args, **kwargs)
 					elif provider == 'g':
@@ -34,9 +34,9 @@ def requireAuthenticate(f):
 def loginFacebook():
 	form = LoginWithFacebookForm()
 	if form.validate_on_submit():
-		facebookToken = FacebookModel().getTokenValidation(form.token.data)
+		facebookToken = FacebookModel.getTokenValidation(form.token.data)
 		if facebookToken['is_valid'] and form.facebookId.data == facebookToken['user_id']:
-			user = FacebookModel().getUserByFacebookId(form.facebookId.data)
+			user = FacebookModel.getUserByFacebookId(form.facebookId.data)
 			if user:
 				return json.dumps({"userId": user['userId']})
 			return abort(400)
@@ -51,13 +51,13 @@ def loginGoogle():
 def registerFacebook():
 	form = RegisterFacebookIdForm()
 	if form.validate_on_submit():
-		facebookToken = FacebookModel().getTokenValidation(form.token.data)
+		facebookToken = FacebookModeletTokenValidation(form.token.data)
 		if facebookToken['is_valid'] and form.facebookId.data == facebookToken['user_id']:
 			if form.userId.data:
-				if FacebookModel().registerFacebookIdToUserId(form.userId.data, form.facebookId.data):
+				if FacebookModel.registerFacebookIdToUserId(form.userId.data, form.facebookId.data):
 					return "OK"
 			else:
-				userId = FacebookModel().createUserWithFacebook(form.facebookId.data)
+				userId = FacebookModel.createUserWithFacebook(form.facebookId.data)
 				if userId:
 					return json.dumps({"userId": userId}), 201
 			return abort(400)
@@ -68,7 +68,7 @@ def registerFacebook():
 def registerGoogle():
 	form = RegisterGoogleIdForm()
 	if form.validate_on_submit():
-		if GoogleModel().registerGoogleIdToUserId(form.userId.data, form.googleId.data):
+		if GoogleModel.registerGoogleIdToUserId(form.userId.data, form.googleId.data):
 			return "", 200
 	
 	return abort(400)

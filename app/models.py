@@ -15,6 +15,8 @@ class SpottedModel(object):
 
 	@staticmethod
 	def createSpotted(userId, anonimity, latitude, longitude, message, picture=None):
+		"""Creates a spotted.
+		"""
 		if not picture is None:
 			# Save it to S3, then keep the picture link to save it in the table.
 			pass
@@ -36,6 +38,8 @@ class SpottedModel(object):
 
 	@staticmethod
 	def getSpottedBySpottedId(spottedId):
+		"""Gets a spotted by spottedId.
+		"""
 		res = False
 
 		try:
@@ -67,33 +71,47 @@ class SpottedModel(object):
 
 	@staticmethod
 	def getSpotteds(latitude, longitude, radius, locationOnly):
+		"""Gets a list of spotteds by using the latitude, longitude and radius.
+		locationOnly returns only get the location of the returned spotteds if true.
+		"""
 		return SpottedModel.__getSpotteds(userId=None, latitude=latitude, longitude=longitude, radius=radius, locationOnly=locationOnly)
 
 	@staticmethod
 	def getSpottedsByUserId(userId):
+		"""Gets a list of spotteds by using the userId of a specific user.
+		"""
 		return SpottedModel.__getSpotteds(userId=userId, latitude=None, longitude=None, radius=None, locationOnly=None)
 
 class UserModel(object):
 
 	@staticmethod
 	def createUser(facebookId="unset", googleId="unset"):
-		userId = str(uuid4())
-		DynamoDBConnection().getUserTable().put_item(
-			Item={
-				'userId': userId,
-				'facebookId': facebookId,
-				'googleId': googleId
-			}
-		)
+		"""THIS METHOD SHOULDN'T BE USED ELSEWHERE THAN IN FacebookModel AND GoogleModel.
+		Creates a user with either facebookId or googleId.
+		"""
+		userId = False
+		if facebookId == "unset" or googleId == "unset" and not facebookId == googleId:
+			userId = str(uuid4())
+			DynamoDBConnection().getUserTable().put_item(
+				Item={
+					'userId': userId,
+					'facebookId': facebookId,
+					'googleId': googleId
+				}
+			)
 
 		return userId
 
 	@staticmethod
 	def doesUserExist(userId):
-		return True if UserModel().getUser(userId) else False
+		"""Checks if a user exists by userId.
+		"""
+		return True if UserModel.getUser(userId) else False
 
 	@staticmethod
 	def getUser(userId):
+		"""Gets a user by userId.
+		"""
 		res = None
 
 		try:
@@ -115,12 +133,16 @@ class FacebookModel(UserModel):
 
 	@staticmethod
 	def createUserWithFacebook(facebookId):
-		if not FacebookModel().doesFacebookIdExist(facebookId):
-			return UserModel().createUser(facebookId=facebookId)
+		"""Creates a user related to a facebookId.
+		"""
+		if not FacebookModel.doesFacebookIdExist(facebookId):
+			return UserModel.createUser(facebookId=facebookId)
 		return False
 
 	@staticmethod
 	def getTokenValidation(token):
+		"""Calls Facebook to receive a validation of a Facebook user token.
+		"""
 		url = app.config['FACEBOOK_DEBUG_URL']
 		accessToken = app.config['FACEBOOK_ACCESS_TOKEN']
 		res = urllib2.urlopen(url.format(input_token=token, access_token=accessToken))
@@ -128,6 +150,8 @@ class FacebookModel(UserModel):
 
 	@staticmethod
 	def getUserByFacebookId(facebookId):
+		"""Gets a user by facebookId.
+		"""
 		res = False
 
 		try:
@@ -145,15 +169,19 @@ class FacebookModel(UserModel):
 
 	@staticmethod
 	def doesFacebookIdExist(facebookId):
-		user = FacebookModel().getUserByFacebookId(facebookId)
+		"""Checks if a user exists by facebookId.
+		"""
+		user = FacebookModel.getUserByFacebookId(facebookId)
 		return True if user and len(user) > 0 else False
 
 	@staticmethod
 	def registerFacebookIdToUserId(userId, facebookId):
+		"""Register a Facebook account to a user.
+		"""
 		res = False
-		if not FacebookModel().doesFacebookIdExist(facebookId):
-			if UserModel().doesUserExist(userId):
-				if FacebookModel().validateUserIdAndFacebookIdLink(userId, None):
+		if not FacebookModel.doesFacebookIdExist(facebookId):
+			if UserModel.doesUserExist(userId):
+				if FacebookModel.validateUserIdAndFacebookIdLink(userId, None):
 					DynamoDBConnection().getUserTable().update_item(
 						Key={
 							'userId': userId
@@ -162,7 +190,7 @@ class FacebookModel(UserModel):
 						ExpressionAttributeValues={
 							':facebookId': facebookId
 						},
-						ReturnValues="UPDATED_NEW"
+						ReturnValues="NONE"
 					)
 					res = True
 		
@@ -170,6 +198,8 @@ class FacebookModel(UserModel):
 
 	@staticmethod
 	def unregisterFacebookIdFromUserId(userId):
+		"""Unregister a Facebook account from a user.
+		"""
 		DynamoDBConnection().getUserTable().update_item(
 			Key={
 				'userId': userId
@@ -178,13 +208,15 @@ class FacebookModel(UserModel):
 			ExpressionAttributeValues={
 				':facebookId': "unset"
 			},
-			ReturnValues="UPDATED_NEW"
+			ReturnValues="NONE"
 		)
 
 	@staticmethod
 	def validateUserIdAndFacebookIdLink(userId, facebookId):
+		"""Validate the link between a user and a Facebook account.
+		"""
 		res = False
-		user = UserModel().getUser(userId)
+		user = UserModel.getUser(userId)
 		if user and user['facebookId'] == facebookId:
 			res = True
 
@@ -194,16 +226,22 @@ class GoogleModel(UserModel):
 
 	@staticmethod
 	def createUserWithGoogle(googleId):
-		if not GoogleModel().doesGoogleIdExist(googleId):
-			return UserModel().createUser(googleId=googleId)
+		"""Creates a user related to a googleId.
+		"""
+		if not GoogleModel.doesGoogleIdExist(googleId):
+			return UserModel.createUser(googleId=googleId)
 		return False
 
 	@staticmethod
 	def getTokenValidation(token):
+		"""Calls Google to receive a validation of a Google user token.
+		"""
 		pass
 
 	@staticmethod
 	def getUserByGoogleId(googleId):
+		"""Gets a user by googleId.
+		"""
 		res = False
 
 		try:
@@ -221,15 +259,19 @@ class GoogleModel(UserModel):
 
 	@staticmethod
 	def doesGoogleIdExist(googleId):
-		user = GoogleModel().getUserByGoogleId(googleId)
+		"""Checks if a user exists by googleId.
+		"""
+		user = GoogleModel.getUserByGoogleId(googleId)
 		return True if user and len(user) > 0 else False
 
 	@staticmethod
 	def registerGoogleIdToUserId(userId, googleId):
+		"""Register a Google account to a user.
+		"""
 		res = False
-		if not GoogleModel().doesGoogleIdExist(googleId):
-			if UserModel().doesUserExist(userId):
-				if GoogleModel().validateUserIdAndGoogleIdLink(userId, None):
+		if not GoogleModel.doesGoogleIdExist(googleId):
+			if UserModel.doesUserExist(userId):
+				if GoogleModel.validateUserIdAndGoogleIdLink(userId, None):
 					DynamoDBConnection().getUserTable().update_item(
 						Key={
 							'userId': userId
@@ -238,7 +280,7 @@ class GoogleModel(UserModel):
 						ExpressionAttributeValues={
 							':googleId': googleId
 						},
-						ReturnValues="UPDATED_NEW"
+						ReturnValues="NONE"
 					)
 					res = True
 		
@@ -246,6 +288,8 @@ class GoogleModel(UserModel):
 
 	@staticmethod
 	def unregisterGoogleIdFromUserId(userId):
+		"""Unregister a Google account from a user.
+		"""
 		DynamoDBConnection().getUserTable().update_item(
 			Key={
 				'userId': userId
@@ -254,13 +298,15 @@ class GoogleModel(UserModel):
 			ExpressionAttributeValues={
 				':googleId': "unset"
 			},
-			ReturnValues="UPDATED_NEW"
+			ReturnValues="NONE"
 		)
 
 	@staticmethod
 	def validateUserIdAndGoogleIdLink(userId, googleId):
+		"""Validate the link between a user and a Google account.
+		"""
 		res = False
-		user = UserModel().getUser(userId)
+		user = UserModel.getUser(userId)
 		if user and user['googleId'] == googleId:
 			res = True
 
