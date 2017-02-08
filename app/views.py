@@ -22,13 +22,14 @@ def requireAuthenticate(acceptGuest):
 					if auth.password == app.config['GUEST_TOKEN']:
 						return f(*args, **kwargs)
 				else:
-					provider, token = auth.password.split('|')
-					if provider == 'f':
-						facebookToken = FacebookModel.getTokenValidation(token)
-						if facebookToken['is_valid'] and auth.username == facebookToken['user_id']:
+					if '|' in auth.password:
+						provider, token = auth.password.split('|')
+						if provider == 'f':
+							facebookToken = FacebookModel.getTokenValidation(token)
+							if facebookToken['is_valid'] and auth.username == facebookToken['user_id']:
+								return f(*args, **kwargs)
+						elif provider == 'g':
 							return f(*args, **kwargs)
-					elif provider == 'g':
-						return f(*args, **kwargs)
 			return abort(401)
 		return decorated_function
 	return requireAuth

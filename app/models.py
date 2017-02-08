@@ -49,7 +49,8 @@ class SpottedModel(object):
 		except ClientError as e:
 			pass
 		else:
-			res = response['Items'][0]
+			if len(response['Items']) == 1:
+				res = response['Items'][0]
 
 		return res
 
