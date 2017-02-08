@@ -30,13 +30,21 @@ def validateUuidField(form, field):
 	if not validateUuid(field.data):
 		raise ValidationError("UserID must be a valid UUID.")
 
+def validateBoolean(form, field):
+	if field.data.lower() == "true":
+		field.data = True
+	elif field.data.lower() == "false":
+		field.data = False
+	else:
+		raise ValidationError("Anonimity must be true or false.")
+
 class ContactForm(FlaskForm):
 	email = StringField('Email', validators=[DataRequired(), Email()])
 	message = TextAreaField('Message', validators=[DataRequired(), Length(max=MAXIMUM_CONTACT_MESSAGE_LENGTH), escapeSpecialCharacters])
 
 class CreateSpottedForm(FlaskForm):
 	userId = StringField('userId', validators=[DataRequired(), validateUuidField, escapeSpecialCharacters])
-	anonimity = BooleanField('anonimity', validators=[DataRequired()])
+	anonimity = StringField('anonimity', validators=[DataRequired(), validateBoolean])
 	longitude = DecimalField('longitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LONGITUDE, max=MAXIMUM_LONGITUDE)])
 	latitude = DecimalField('latitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LATITUDE, max=MAXIMUM_LATITUDE)])
 	message = TextAreaField('message', validators=[DataRequired(), Length(max=MAXIMUM_SPOTTED_MESSAGE_LENGTH), escapeSpecialCharacters])

@@ -54,43 +54,65 @@ class SpottedModel(object):
 		return res
 
 	@staticmethod
-	def __getSpotteds(userId, latitude, longitude, radius, locationOnly):
+	def getSpotteds(latitude, longitude, radius, locationOnly):
+		"""Gets a list of spotteds by using the latitude, longitude and radius.
+		locationOnly returns only get the location of the returned spotteds if true.
+		"""
+		return []
+
+	@staticmethod
+	def getMySpotteds(userId):
+		"""Gets a list of spotteds by using the userId of a specific user.
+		"""
 		res = False
 
 		try:
 			response = DynamoDBConnection().getSpottedTable().query(
 				IndexName='userIdIndex',
-				KeyConditionExpression=Key("userId").eq(userId)
+				KeyConditionExpression="userId = :k1",
+				ExpressionAttributeValues={
+					':k1' : userId
+				}
 			)
 		except ClientError as e:
-			pass
+			print(e)
 		else:
 			res = response['Items']
 
 		return res
 
 	@staticmethod
-	def getSpotteds(latitude, longitude, radius, locationOnly):
-		"""Gets a list of spotteds by using the latitude, longitude and radius.
-		locationOnly returns only get the location of the returned spotteds if true.
-		"""
-		return SpottedModel.__getSpotteds(userId=None, latitude=latitude, longitude=longitude, radius=radius, locationOnly=locationOnly)
-
-	@staticmethod
 	def getSpottedsByUserId(userId):
 		"""Gets a list of spotteds by using the userId of a specific user.
 		"""
-		return SpottedModel.__getSpotteds(userId=userId, latitude=None, longitude=None, radius=None, locationOnly=None)
+		res = False
+
+		try:
+			response = DynamoDBConnection().getSpottedTable().query(
+				IndexName='userIdIndex',
+				KeyConditionExpression="userId = :k1",
+				FilterExpression="anonimity = :f1",
+				ExpressionAttributeValues={
+					":k1" : userId,
+					":f1" : False
+				}
+			)
+		except ClientError as e:
+			print(e)
+		else:
+			res = response['Items']
+
+		return res
 
 class UserModel(object):
 
 	@staticmethod
-	def createUser(facebookId="unset", googleId="unset"):
+	def createUser(facebookId='unset', googleId='unset'):
 		"""THIS METHOD SHOULDN'T BE USED ELSEWHERE THAN IN FacebookModel AND GoogleModel.
 		Creates a user with either facebookId or googleId.
 		"""
 		userId = False
-		if facebookId == "unset" or googleId == "unset" and not facebookId == googleId:
+		if facebookId == 'unset' or googleId == 'unset' and not facebookId == googleId:
 			userId = str(uuid4())
 			DynamoDBConnection().getUserTable().put_item(
 				Item={
@@ -190,7 +212,7 @@ class FacebookModel(UserModel):
 						ExpressionAttributeValues={
 							':facebookId': facebookId
 						},
-						ReturnValues="NONE"
+						ReturnValues='None'
 					)
 					res = True
 		
@@ -206,9 +228,9 @@ class FacebookModel(UserModel):
 			},
 			UpdateExpression="set facebookId = :facebookId",
 			ExpressionAttributeValues={
-				':facebookId': "unset"
+				':facebookId': 'unset'
 			},
-			ReturnValues="NONE"
+			ReturnValues='None'
 		)
 
 	@staticmethod
@@ -280,7 +302,7 @@ class GoogleModel(UserModel):
 						ExpressionAttributeValues={
 							':googleId': googleId
 						},
-						ReturnValues="NONE"
+						ReturnValues='None'
 					)
 					res = True
 		
@@ -296,9 +318,9 @@ class GoogleModel(UserModel):
 			},
 			UpdateExpression="set googleId = :googleId",
 			ExpressionAttributeValues={
-				':googleId': "unset"
+				':googleId': 'unset'
 			},
-			ReturnValues="NONE"
+			ReturnValues='None'
 		)
 
 	@staticmethod

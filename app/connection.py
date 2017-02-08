@@ -83,10 +83,6 @@ class DynamoDBConnection(object):
 					'AttributeName': 'spottedId',
 					'KeyType': 'HASH'
 				},
-				{
-					'AttributeName': 'userId',
-					'KeyType': 'RANGE'
-				}
 			],
 			AttributeDefinitions=[
 				{
@@ -97,7 +93,6 @@ class DynamoDBConnection(object):
 					'AttributeName': 'userId',
 					'AttributeType': 'S'
 				}
-
 			],
 			ProvisionedThroughput={
 				'ReadCapacityUnits': 10,
@@ -119,7 +114,7 @@ class DynamoDBConnection(object):
 						'ReadCapacityUnits': 2,
 						'WriteCapacityUnits': 2,
 					}
-				},
+				}
 			],
 		)
 		print("Local tables are created.")

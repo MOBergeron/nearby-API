@@ -12,23 +12,26 @@ from app.utils import DecimalEncoder, validateUuid
 from flask import abort, request
 
 # Decorators
-def requireAuthenticate(f):
-	@wraps(f)
-	def decorated_function(*args, **kwargs):
-		auth = request.authorization
-		if auth:
-			provider, token = auth.password.split('|')
-			if validateUuid(auth.username) and provider in ['f','g']:
-				user = UserModel.getUser(auth.username)
-				if user:
+def requireAuthenticate(acceptGuest):
+	def requireAuth(f):
+		@wraps(f)
+		def decorated_function(*args, **kwargs):
+			auth = request.authorization
+			if auth:
+				if acceptGuest and auth.username == app.config['GUEST_ID']:
+					if auth.password == app.config['GUEST_TOKEN']:
+						return f(*args, **kwargs)
+				else:
+					provider, token = auth.password.split('|')
 					if provider == 'f':
 						facebookToken = FacebookModel.getTokenValidation(token)
-						if facebookToken['is_valid'] and user['facebookId'] == facebookToken['user_id']:
+						if facebookToken['is_valid'] and auth.username == facebookToken['user_id']:
 							return f(*args, **kwargs)
 					elif provider == 'g':
 						return f(*args, **kwargs)
-		return abort(401)
-	return decorated_function
+			return abort(401)
+		return decorated_function
+	return requireAuth
 
 @app.route("/v1/login/facebook", methods=['POST'])
 def loginFacebook():
@@ -74,7 +77,7 @@ def registerGoogle():
 	return abort(400)
 
 @app.route("/v1/spotted", methods=['POST'])
-@requireAuthenticate
+@requireAuthenticate(False)
 def createSpotted():
 	form = CreateSpottedForm()
 	
@@ -94,7 +97,7 @@ def createSpotted():
 	return abort(400)
 
 @app.route("/v1/spotted/<spottedId>", methods=['GET'])
-@requireAuthenticate
+@requireAuthenticate(True)
 def spotted(spottedId):
 	# Returns a specific spotted
 	if spottedId:
@@ -105,8 +108,8 @@ def spotted(spottedId):
 
 	return abort(400)
 
-@app.route("/v1/spotteds", defaults={'userId': None}, methods=['GET'])
-@requireAuthenticate
+@app.route("/v1/spotteds", methods=['GET'])
+@requireAuthenticate(True)
 def spotteds():
 	form = GetSpottedsForm(request.args)
 
@@ -126,16 +129,27 @@ def spotteds():
 	return abort(400)
 
 @app.route("/v1/spotteds/<userId>", methods=['GET'])
-@requireAuthenticate
+@requireAuthenticate(False)
 def spottedsByUserId(userId):
 	# Returns all spotteds to a specific userId
-	# NOTE : Make sure to only and only give this list if the user token correspond to the userId
-	# 	Unless it only returns the NOT anonimous ones.
-	if userId:
-		if validateUuid(userId):
+	if userId and (validateUuid(userId) or userId == 'me'):
+		res = False
+		if userId == 'me':
+			user = FacebookModel.getUserByFacebookId(request.authorization.username)
+			if user:
+				userId = user['userId']
+				res = SpottedModel.getMySpotteds(userId)
+		elif FacebookModel.validateUserIdAndFacebookIdLink(userId, request.authorization.username):
 			res = SpottedModel.getSpottedsByUserId(userId)
-			if res:
-				return json.dumps(res, cls=DecimalEncoder)
+			#res = SpottedModel.getMySpotteds(userId)		
+			print("Link was validate")
+		else:
+			res = SpottedModel.getSpottedsByUserId(userId)
+			print("Link wasn't validate")
+
+		print(res)
+		if type(res) == list:
+			return json.dumps(res, cls=DecimalEncoder)
 
 	return abort(400)
 
