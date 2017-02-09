@@ -50,7 +50,7 @@ class DynamoDBConnection(object):
 						},
 					],
 					'Projection': {
-						'ProjectionType': 'KEYS_ONLY',
+						'ProjectionType': 'ALL',
 					},
 					'ProvisionedThroughput': {
 						'ReadCapacityUnits': 2,
@@ -66,7 +66,7 @@ class DynamoDBConnection(object):
 						},
 					],
 					'Projection': {
-						'ProjectionType': 'KEYS_ONLY',
+						'ProjectionType': 'ALL',
 					},
 					'ProvisionedThroughput': {
 						'ReadCapacityUnits': 2,

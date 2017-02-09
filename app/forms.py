@@ -57,22 +57,19 @@ class GetSpottedsForm(FlaskForm):
 	radius = IntegerField('radius', validators=[DataRequired(), NumberRange(min=MINIMUM_RADIUS, max=MAXIMUM_RADIUS)])
 	locationOnly = BooleanField('locationOnly', default=DEFAULT_LOCATION_ONLY)
 
-class LoginWithFacebookForm(FlaskForm):
-	facebookId = StringField('facebookId', validators=[DataRequired(), escapeSpecialCharacters])
-	token = StringField('token', validators=[DataRequired()])
-
-class LoginWithGoogleForm(FlaskForm):
-	googleId = StringField('googleId', validators=[DataRequired(), escapeSpecialCharacters])
-	token = StringField('token', validators=[DataRequired()])
-
-class RegisterFacebookIdForm(FlaskForm):
+class MergeFacebookForm(FlaskForm):
 	facebookId = StringField('facebookId', validators=[DataRequired(), escapeSpecialCharacters])
 	token = StringField('token', validators=[DataRequired()])
 	
-	userId = StringField('userId', validators=[Optional(), validateUuidField, escapeSpecialCharacters])
+class MergeGoogleForm(FlaskForm):
+	googleId = StringField('googleId', validators=[DataRequired(), escapeSpecialCharacters])
+	token = StringField('token', validators=[DataRequired()])
 
-class RegisterGoogleIdForm(FlaskForm):
+class LinkFacebookForm(FlaskForm):
+	facebookId = StringField('facebookId', validators=[DataRequired(), escapeSpecialCharacters])
+	token = StringField('token', validators=[DataRequired()])
+	
+class LinkGoogleForm(FlaskForm):
 	googleId = StringField('googleId', validators=[DataRequired(), escapeSpecialCharacters])
 	token = StringField('token', validators=[DataRequired()])
 	
-	userId = StringField('userId', validators=[Optional(), validateUuidField, escapeSpecialCharacters])

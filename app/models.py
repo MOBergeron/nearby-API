@@ -10,6 +10,7 @@ from app.connection import DynamoDBConnection
 
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
+from oauth2client import client, crypt
 
 class SpottedModel(object):
 
@@ -27,6 +28,7 @@ class SpottedModel(object):
 				'spottedId': spottedId,
 				'userId': userId,
 				'anonimity': anonimity,
+				'isArchived': False,
 				'latitude': latitude,
 				'longitude': longitude,
 				# Add picture link here
@@ -112,18 +114,43 @@ class UserModel(object):
 		"""THIS METHOD SHOULDN'T BE USED ELSEWHERE THAN IN FacebookModel AND GoogleModel.
 		Creates a user with either facebookId or googleId.
 		"""
-		userId = False
-		if facebookId == 'unset' or googleId == 'unset' and not facebookId == googleId:
-			userId = str(uuid4())
-			DynamoDBConnection().getUserTable().put_item(
-				Item={
-					'userId': userId,
-					'facebookId': facebookId,
-					'googleId': googleId
-				}
-			)
+		userId = str(uuid4())
+		DynamoDBConnection().getUserTable().put_item(
+			Item={
+				'userId': userId,
+				'facebookId': facebookId,
+				'googleId': googleId,
+				'disabled': False
+			}
+		)
 
 		return userId
+
+	@staticmethod
+	def disableUser(userId):
+
+		DynamoDBConnection().getUserTable().delete_item(
+			Key={
+				'userId': userId
+			},
+			UpdateExpression="set disabled = :k1",
+			ExpressionAttributeValues={
+				':k1': True
+			},
+			ReturnValues='None'
+		)
+
+		DynamoDBConnection().getSpottedTable().update_item(
+			Key={
+				'userId': userId
+			},
+			UpdateExpression="set isArchived = :k1",
+			ExpressionAttributeValues={
+				':k1': True
+			},
+			ReturnValues='None'
+		)
+
 
 	@staticmethod
 	def doesUserExist(userId):
@@ -148,6 +175,31 @@ class UserModel(object):
 		else:
 			if 'Item' in response:
 				res = response['Item']
+
+		return res
+
+	@staticmethod
+	def mergeUsers(userIdFrom, userIdTo):
+		res = False
+		if UserModel.doesUserExist(userIdFrom) and UserModel.doesUserExist(userIdTo):
+			DynamoDBConnection().getSpottedTable().update_item(
+				Key={
+					'userId': userIdFrom
+				},
+				UpdateExpression="set userId = :k1",
+				ExpressionAttributeValues={
+					':k1': userIdTo
+				},
+				ReturnValues='None'
+			)
+
+			DynamoDBConnection().getUserTable().delete_item(
+				Key={
+					'userId': userIdFrom
+				},
+				ReturnValues='None'
+			)
+			res = True
 
 		return res
 
@@ -185,7 +237,7 @@ class FacebookModel(UserModel):
 		except ClientError as e:
 			pass
 		else:
-			if len(response['Items']) > 0:
+			if len(response['Items']) == 1:
 				res = response['Items'][0]
 
 		return res
@@ -194,8 +246,7 @@ class FacebookModel(UserModel):
 	def doesFacebookIdExist(facebookId):
 		"""Checks if a user exists by facebookId.
 		"""
-		user = FacebookModel.getUserByFacebookId(facebookId)
-		return True if user and len(user) > 0 else False
+		return True if FacebookModel.getUserByFacebookId(facebookId) else False
 
 	@staticmethod
 	def registerFacebookIdToUserId(userId, facebookId):
@@ -203,19 +254,15 @@ class FacebookModel(UserModel):
 		"""
 		res = False
 		if not FacebookModel.doesFacebookIdExist(facebookId):
-			if UserModel.doesUserExist(userId):
-				if FacebookModel.validateUserIdAndFacebookIdLink(userId, None):
-					DynamoDBConnection().getUserTable().update_item(
-						Key={
-							'userId': userId
-						},
-						UpdateExpression="set facebookId = :facebookId",
-						ExpressionAttributeValues={
-							':facebookId': facebookId
-						},
-						ReturnValues='None'
-					)
-					res = True
+			user = UserModel.getUser(userId)
+			if user and FacebookModel.validateUserIdAndFacebookIdLink(facebookId, 'unset'):
+				DynamoDBConnection().getUserTable().delete_item(
+					Key={
+						'userId': userId
+					}
+				)
+
+				res = UserModel.createUser(facebookId=facebookId, googleId=user['googleId'])
 		
 		return res
 
@@ -259,7 +306,20 @@ class GoogleModel(UserModel):
 	def getTokenValidation(token):
 		"""Calls Google to receive a validation of a Google user token.
 		"""
-		pass
+		CLIENT_ID = app.config['GOOGLE_CLIENT_ID']
+		
+		tokenInfo = None
+		try:
+			tokenInfo = client.verify_id_token(token, CLIENT_ID)
+
+			if tokenInfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+				raise crypt.AppIdentityError("Wrong issuer.")
+
+		except crypt.AppIdentityError as e:
+			print(e)
+			tokenInfo = False
+		
+		return tokenInfo
 
 	@staticmethod
 	def getUserByGoogleId(googleId):
@@ -273,9 +333,9 @@ class GoogleModel(UserModel):
 				KeyConditionExpression=Key('googleId').eq(googleId)
 			)
 		except ClientError as e:
-			pass
+			print(e)
 		else:
-			if len(response['Items']) > 0:
+			if len(response['Items']) == 1:
 				res = response['Items'][0]
 
 		return res
@@ -284,8 +344,7 @@ class GoogleModel(UserModel):
 	def doesGoogleIdExist(googleId):
 		"""Checks if a user exists by googleId.
 		"""
-		user = GoogleModel.getUserByGoogleId(googleId)
-		return True if user and len(user) > 0 else False
+		return True if GoogleModel.getUserByGoogleId(googleId) else False
 
 	@staticmethod
 	def registerGoogleIdToUserId(userId, googleId):
@@ -293,19 +352,15 @@ class GoogleModel(UserModel):
 		"""
 		res = False
 		if not GoogleModel.doesGoogleIdExist(googleId):
-			if UserModel.doesUserExist(userId):
-				if GoogleModel.validateUserIdAndGoogleIdLink(userId, None):
-					DynamoDBConnection().getUserTable().update_item(
-						Key={
-							'userId': userId
-						},
-						UpdateExpression="set googleId = :googleId",
-						ExpressionAttributeValues={
-							':googleId': googleId
-						},
-						ReturnValues='None'
-					)
-					res = True
+			user = UserModel.getUser(userId)
+			if user and GoogleModel.validateUserIdAndGoogleIdLink(userId, 'unset'):
+				DynamoDBConnection().getUserTable().delete_item(
+					Key={
+						'userId': userId
+					}
+				)
+
+				res = UserModel.createUser(facebookId=user['facebookId'], googleId=googleId)
 		
 		return res
 
