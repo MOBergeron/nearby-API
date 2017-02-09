@@ -163,9 +163,9 @@ def createSpotted():
 		#picture = form.picture.data
 
 		if request.headers['Service-Provider'] == 'Facebook':
-			user = FacebookModel.getUserByFacebookId()
+			user = FacebookModel.getUserByFacebookId(request.authorization.username)
 		if request.headers['Service-Provider'] == 'Google':
-			user = GoogleModel.getUserByGoogleId()
+			user = GoogleModel.getUserByGoogleId(request.authorization.username)
 
 		if user:
 			res = SpottedModel.createSpotted(userId=user['userId'], anonimity=anonimity, latitude=latitude, longitude=longitude, message=message, picture=None)
