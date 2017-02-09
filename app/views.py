@@ -25,34 +25,33 @@ def requireAuthenticate(acceptGuest):
 					if request.headers['Service-Provider'] == 'Facebook':
 						facebookToken = FacebookModel.getTokenValidation(auth.password)
 						if facebookToken['is_valid'] and facebookToken['user_id'] == auth.username:
-							return f(*args, **kwargs)
+							if str(request.url_rule) == '/v1/login' or FacebookModel.doesFacebookIdExist(auth.username):
+								return f(*args, **kwargs)
 					elif request.headers['Service-Provider'] == 'Google':
 						googleToken = GoogleModel.getTokenValidation(auth.password)
 						if googleToken and googleToken['sub'] == auth.username:
-							return f(*args, **kwargs)
+							if str(request.url_rule) == '/v1/login' or GoogleModel.doesGoogleIdExist(auth.username):
+								return f(*args, **kwargs)
 			return abort(401)
 		return decorated_function
 	return requireAuth
 
-@app.route("/v1/login/facebook", methods=['POST'])
+@app.route("/v1/login", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
 def loginFacebook():
-	if not FacebookModel.doesFacebookIdExist(request.authorization.username):
-		if FacebookModel.createUserWithFacebook(request.authorization.username):
-			return "Created", 201
-	else:
-		return "OK", 200
-		
-	return abort(400)
+	if request.headers['Service-Provider'] == 'Facebook':
+		if not FacebookModel.doesFacebookIdExist(request.authorization.username):
+			if FacebookModel.createUserWithFacebook(request.authorization.username):
+				return "Created", 201
+		else:
+			return "OK", 200
 
-@app.route("/v1/login/google", methods=['POST'])
-@requireAuthenticate(acceptGuest=False)
-def loginGoogle():
-	if not GoogleModel.doesGoogleIdExist(request.authorization.username):
-		if GoogleModel.createUserWithGoogle(request.authorization.username):
-			return "Created", 201
-	else:
-		return "OK", 200
+	elif request.headers['Service-Provider'] == 'Google':
+		if not GoogleModel.doesGoogleIdExist(request.authorization.username):
+			if GoogleModel.createUserWithGoogle(request.authorization.username):
+				return "Created", 201
+		else:
+			return "OK", 200
 		
 	return abort(400)
 
@@ -157,16 +156,21 @@ def createSpotted():
 	
 	# Creates a spotted according to form data
 	if form.validate_on_submit():
-		userId = form.userId.data
 		anonimity = form.anonimity.data
 		longitude = form.longitude.data
 		latitude = form.latitude.data
 		message = form.message.data
 		#picture = form.picture.data
 
-		res = SpottedModel.createSpotted(userId=userId, anonimity=anonimity, latitude=latitude, longitude=longitude, message=message, picture=None)
-		if res:
-			return json.dumps({"spottedId": res}), 201
+		if request.headers['Service-Provider'] == 'Facebook':
+			user = FacebookModel.getUserByFacebookId()
+		if request.headers['Service-Provider'] == 'Google':
+			user = GoogleModel.getUserByGoogleId()
+
+		if user:
+			res = SpottedModel.createSpotted(userId=user['userId'], anonimity=anonimity, latitude=latitude, longitude=longitude, message=message, picture=None)
+			if res:
+				return json.dumps({"spottedId": res}), 201
 	
 	return abort(400)
 
@@ -191,9 +195,10 @@ def spotteds():
 
 	# Returns all corresponding spotteds according to arguments
 	if form.validate():
-		longitude = form.longitude.data
-		latitude = form.latitude.data
-		radius = form.radius.data
+		latTL = form.latTL.data
+		longTL = form.longTL.data
+		latBR = form.latBR.data
+		longBR = form.longBR.data
 		locationOnly = form.locationOnly.data
 
 		# If locationOnly is True, returns only the locations for all the spotteds.

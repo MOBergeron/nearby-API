@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import cgi
 
-from app.utils import validateUuid
-
 from flask_wtf import FlaskForm
 
 from wtforms import BooleanField, DecimalField, IntegerField, StringField, TextAreaField
@@ -26,10 +24,6 @@ DEFAULT_LOCATION_ONLY = False
 def escapeSpecialCharacters(form, field):
 	field.data = cgi.escape(field.data, True)
 
-def validateUuidField(form, field):
-	if not validateUuid(field.data):
-		raise ValidationError("UserID must be a valid UUID.")
-
 def validateBoolean(form, field):
 	if field.data.lower() == "true":
 		field.data = True
@@ -43,7 +37,6 @@ class ContactForm(FlaskForm):
 	message = TextAreaField('Message', validators=[DataRequired(), Length(max=MAXIMUM_CONTACT_MESSAGE_LENGTH), escapeSpecialCharacters])
 
 class CreateSpottedForm(FlaskForm):
-	userId = StringField('userId', validators=[DataRequired(), validateUuidField, escapeSpecialCharacters])
 	anonimity = StringField('anonimity', validators=[DataRequired(), validateBoolean])
 	longitude = DecimalField('longitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LONGITUDE, max=MAXIMUM_LONGITUDE)])
 	latitude = DecimalField('latitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LATITUDE, max=MAXIMUM_LATITUDE)])
@@ -55,7 +48,7 @@ class GetSpottedsForm(FlaskForm):
 	longitude = DecimalField('longitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LONGITUDE, max=MAXIMUM_LONGITUDE)])
 	latitude = DecimalField('latitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LATITUDE, max=MAXIMUM_LATITUDE)])
 	radius = IntegerField('radius', validators=[DataRequired(), NumberRange(min=MINIMUM_RADIUS, max=MAXIMUM_RADIUS)])
-	locationOnly = BooleanField('locationOnly', default=DEFAULT_LOCATION_ONLY)
+	locationOnly = StringField('locationOnly', validators=[validateBoolean], default=DEFAULT_LOCATION_ONLY)
 
 class MergeFacebookForm(FlaskForm):
 	facebookId = StringField('facebookId', validators=[DataRequired(), escapeSpecialCharacters])

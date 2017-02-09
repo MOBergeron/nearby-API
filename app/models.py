@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import json
 import urllib2
+import Geohash
 
 from uuid import uuid4
 
@@ -23,10 +24,12 @@ class SpottedModel(object):
 			pass
 
 		spottedId = str(uuid4())
+		geoHash = Geohash.encode(latitude, longitude, precision=7)
 		DynamoDBConnection().getSpottedTable().put_item(
 			Item={
 				'spottedId': spottedId,
 				'userId': userId,
+				'geoHash': geoHash,
 				'anonimity': anonimity,
 				'isArchived': False,
 				'latitude': latitude,

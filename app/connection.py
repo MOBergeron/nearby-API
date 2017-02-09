@@ -92,6 +92,10 @@ class DynamoDBConnection(object):
 				{
 					'AttributeName': 'userId',
 					'AttributeType': 'S'
+				},
+				{
+					'AttributeName': 'geoHash',
+					'AttributeType': 'S'
 				}
 			],
 			ProvisionedThroughput={
@@ -109,6 +113,26 @@ class DynamoDBConnection(object):
 					],
 					'Projection': {
 						'ProjectionType': 'ALL',
+					},
+					'ProvisionedThroughput': {
+						'ReadCapacityUnits': 2,
+						'WriteCapacityUnits': 2,
+					}
+				},
+				{
+					'IndexName': 'geoIndex',
+					'KeySchema': [
+						{
+							'AttributeName': 'geoHash',
+							'KeyType': 'HASH',
+						},
+						{
+							'AttributeName': 'spottedId',
+							'KeyType': 'RANGE',
+						}
+					],
+					'Projection': {
+						'ProjectionType': 'KEYS_ONLY',
 					},
 					'ProvisionedThroughput': {
 						'ReadCapacityUnits': 2,
