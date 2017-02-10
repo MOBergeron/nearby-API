@@ -4,6 +4,7 @@
 - [API Documentation] (#api-documentation)
   - GET
   - POST
+    - [Error Messages] (#error-messages)
     - [Authentication] (#authentication)
     - [Create a spotted] (#create-a-spotted)
 - [Requirements] (#requirements)
@@ -12,6 +13,35 @@
 ## API Documentation
 
 The base address to join the dev API is : https://nbyapi.mo-bergeron.com
+
+###Error Messages
+----
+  The following error messages can be encountered when calling any route.
+  
+* **Error Response:**
+
+  * **Code:** 400 BAD REQUEST <br />
+    **Content:** `{"error" : "Bad Request"}`
+  
+  OR
+  
+  * **Code:** 401 UNAUTHORIZED <br />
+    **Content:** `{"error" : "Unauthorized"}`
+
+  OR
+  
+  * **Code:** 404 NOT FOUND <br />
+    **Content:** `{"error" : "Not found"}`
+
+  OR
+  
+  * **Code:** 405 METHOD NOT ALLOWED <br />
+    **Content:** `{"error" : "Method Not Allowed"}`
+
+  OR
+  
+  * **Code:** 500 INTERNAL SERVER ERROR <br />
+    **Content:** `{"error" : "Internal Server Error"}`
 
 ###Authentication
 ----
@@ -33,9 +63,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   **Required**:
   
-  `service-provider=[Facebook / Google]`
+  `Service-Provider: {Facebook} OR {Google}`
   
-  `Authorization=[Your Basic Auth token]`
+  `Authorization: Basic {Base64 of facebookId:facebookToken}`
 
 * **Data Params**
 
@@ -53,13 +83,8 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
  
 * **Error Response:**
 
-  * **Code:** 401 UNAUTHORIZED <br />
-    **Content:** TODO
-
-  OR
-  
-  * **Code:** 404 NOT FOUND <br />
-    **Content:** TODO  
+  * **Code:** 400 BAD REQUEST <br />
+    **Content:** `{"error" : "Bad Request"}`
 
 ###Create a Spotted
 ----
@@ -91,9 +116,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   **Required**:
   
-  `service-provider=Facebook / Google`
+  `Service-Provider: {Facebook} OR {Google}`
   
-  `Authorization=Your Basic Auth token`
+  `Authorization: Basic {Base64 of facebookId:facebookToken}`
 
 * **Data Params**
 
@@ -102,23 +127,12 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 * **Success Response:**
   
   * **Code:** 201 <br />
-    **Content:** `{"spottedId" : "fe127933-f9fa-4189-b0e3-1ebb828c1714"}`
+    **Content:** `{"result" : "fe127933-f9fa-4189-b0e3-1ebb828c1714"}`
  
 * **Error Response:**
 
-  * **Code:** 401 UNAUTHORIZED <br />
-    **Content:** TODO
-
-  OR
-  
   * **Code:** 400 BAD REQUEST <br />
-    **Content:** TODO
-    
-  OR
-  
-  * **Code:** 404 NOT FOUND <br />
-    **Content:** TODO
-
+    **Content:** `{"error" : "Bad Request"}`
 
 ## Requirements
 * Python 2.7
@@ -132,7 +146,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 First, you have to install python 2.7. It is quite easy depending on your OS.
 
 Then, run the following command to install dependencies : 
-`pip install flask flask-wtf flask-script boto3`
+`pip install flask flask-wtf flask-script boto3 python-geohash`
 
 Make `run.sh` executable with `chmod +x run.sh`.
 
