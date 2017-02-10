@@ -28,7 +28,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 *  **Headers Params**
 
-  **Required**
+  **Required**:
   
   `service-provider=Facebook / Google`
   
