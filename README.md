@@ -2,14 +2,14 @@
 
 ###Contents
 - [API Documentation] (#api-documentation)
+  - [Error Messages] (#error-messages)
   - GET
-  - POST
-    - [Error Messages] (#error-messages)
-    - [Authentication] (#authentication)
-    - [Create a spotted] (#create-a-spotted)
     - [Get a spotted] (#get-a-spotted)
     - [Get my Spotteds] (#get-my-spotteds)
     - [Get Spotteds by user ID] (#get-spotteds-by-user-id)
+  - POST
+    - [Authentication] (#authentication)
+    - [Create a spotted] (#create-a-spotted)
 - [Requirements] (#requirements)
 - [Installation] (#installation)
 
@@ -51,104 +51,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Internal Server Error"}`
   * **Meaning:** Something went wrong in the server. Sorry about that.<br />
 
-###Authentication
-----
-  This is the main call to be able to authenticate with the API.
-
-* **URL**
-
-  /v1/login/
-
-* **Method**
-  
-  `POST`
-  
-*  **URL Params**
-
-   None
-
-*  **Headers Params**
-
-  **Required:**
-  
-  `Service-Provider: {Facebook} OR {Google}`
-  
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
-
-* **Data Params**
-
-  None
-
-* **Success Response**
-  
-  * **Code:** 201
-  * **Content:** `{"result": "Created"}`
-  * **Meaning:** A new account has been created and the login was successful
-  
-  OR
-  
-  * **Code:** 200
-  * **Content:** `{"result": "OK"}`
-  * **Meaning:** The account already existed and the login was successful
- 
-* **Error Response**
-
-  * **Code:** 400 BAD REQUEST
-  * **Content:** `{"error" : "Bad Request"}`
-  * **Meaning:** Not supposed to happen
-
-###Create a Spotted
-----
-  This is the call to create a new Spotted message.
-
-* **URL**
-
-  /v1/spotted
-
-* **Method**
-  
-  `POST`
-  
-*  **URL Params**
-
-    None
-
-*  **Headers Params**
-
-  **Required:**
-  
-  `Service-Provider: {Facebook} OR {Google}`
-  
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
-
-* **Data Params**
-
-   **Required:**
-   
-   `anonimity=[boolean]`
-   
-   `longitude=[float]`
-   
-   `latitude=[float]`
-   
-   `message=[string]`
-   
-   **Optional:**
-   
-   `picture=[url]`
-
-* **Success Response**
-  
-  * **Code:** 201
-  * **Content:** `{"result" : "fe127933-f9fa-4189-b0e3-1ebb828c1714"}`
-  * **Meaning:** A Spotted has been created. The result is the Spotted ID.
- 
-* **Error Response**
-
-  * **Code:** 400 BAD REQUEST
-  * **Content:** `{"error" : "Bad Request"}`
-  * **Meaning:** The form wasn't valid OR your user wasn't found in the database.
-
+##GET
 ###Get a Spotted
 ----
   This is the call to get a Spotted message.
@@ -370,6 +273,105 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Code:** 400 BAD REQUEST
   * **Content:** `{"error" : "Bad Request"}`
   * **Meaning:** The {userId} was not UUID validated.
+
+##POST
+###Authentication
+----
+  This is the main call to be able to authenticate with the API.
+
+* **URL**
+
+  /v1/login/
+
+* **Method**
+  
+  `POST`
+  
+*  **URL Params**
+
+   None
+
+*  **Headers Params**
+
+  **Required:**
+  
+  `Service-Provider: {Facebook} OR {Google}`
+  
+  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+
+* **Data Params**
+
+  None
+
+* **Success Response**
+  
+  * **Code:** 201
+  * **Content:** `{"result": "Created"}`
+  * **Meaning:** A new account has been created and the login was successful
+  
+  OR
+  
+  * **Code:** 200
+  * **Content:** `{"result": "OK"}`
+  * **Meaning:** The account already existed and the login was successful
+ 
+* **Error Response**
+
+  * **Code:** 400 BAD REQUEST
+  * **Content:** `{"error" : "Bad Request"}`
+  * **Meaning:** Not supposed to happen
+
+###Create a Spotted
+----
+  This is the call to create a new Spotted message.
+
+* **URL**
+
+  /v1/spotted
+
+* **Method**
+  
+  `POST`
+  
+*  **URL Params**
+
+    None
+
+*  **Headers Params**
+
+  **Required:**
+  
+  `Service-Provider: {Facebook} OR {Google}`
+  
+  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+
+* **Data Params**
+
+   **Required:**
+   
+   `anonimity=[boolean]`
+   
+   `longitude=[float]`
+   
+   `latitude=[float]`
+   
+   `message=[string]`
+   
+   **Optional:**
+   
+   `picture=[url]`
+
+* **Success Response**
+  
+  * **Code:** 201
+  * **Content:** `{"result" : "fe127933-f9fa-4189-b0e3-1ebb828c1714"}`
+  * **Meaning:** A Spotted has been created. The result is the Spotted ID.
+ 
+* **Error Response**
+
+  * **Code:** 400 BAD REQUEST
+  * **Content:** `{"error" : "Bad Request"}`
+  * **Meaning:** The form wasn't valid OR your user wasn't found in the database.
 
 ## Requirements
 * Python 2.7
