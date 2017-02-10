@@ -215,7 +215,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Not Found"}`
   * **Meaning:** The requested Spotted was not found.
 
-###Get my Spotted
+###Get my Spotteds
 ----
   This is the call to get my Spotted messages.
 
