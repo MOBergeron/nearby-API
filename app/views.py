@@ -64,16 +64,16 @@ def loginFacebook():
 	if g.loginWith == 'Facebook':
 		if not FacebookModel.doesFacebookIdExist(request.authorization.username):
 			if FacebookModel.createUserWithFacebook(g.facebookToken):
-				return "Created", 201
+				return json.dumps({'result':'Created'}), 201
 		else:
-			return "OK", 200
+			return json.dumps({'result':'OK'}), 200
 
 	elif g.loginWith == 'Google':
 		if not GoogleModel.doesGoogleIdExist(request.authorization.username):
 			if GoogleModel.createUserWithGoogle(g.googleToken):
-				return "Created", 201
+				return json.dumps({'result':'Created'}), 201
 		else:
-			return "OK", 200
+			return json.dumps({'result':'OK'}), 200
 		
 	return abort(400)
 
@@ -104,7 +104,7 @@ def mergeFacebook():
 
 				if googleUser and googleUser['facebookId'] == 'unset':
 					if UserModel.mergeUsers(facebookUser['userId'], googleUser['userId']):
-						return "OK",200
+						return json.dumps({'result':'OK'}), 200
 
 	return abort(400)
 
@@ -125,7 +125,7 @@ def mergeGoogle():
 
 				if facebookUser and facebookUser['googleId'] == 'unset':
 					if UserModel.mergeUsers(googleUser['userId'], facebookUser['userId']):
-						return "OK", 200
+						return json.dumps({'result':'OK'}), 200
 
 	return abort(400)
 
@@ -144,9 +144,9 @@ def linkFacebook():
 				user = GoogleModel.getUserByGoogleId(request.authorization.username)
 				if user and user['facebookId'] == 'unset':
 					if FacebookModel.linkFacebookIdToUserId(user['userId'], form.facebookId.data):
-						return "OK", 200
+						return json.dumps({'result':'OK'}), 200
 			else:
-				return "Account already exists", 200
+				return json.dumps({'result':'Account already exists'}), 400
 
 	return abort(400)
 
@@ -165,9 +165,9 @@ def linkGoogle():
 				user = FacebookModel.getUserByFacebookId(request.authorization.username)
 				if user and user['googleId'] == 'unset':
 					if GoogleModel.linkGoogleIdToUserId(user['userId'], form.googleId.data):
-						return "OK", 200
+						return json.dumps({'result':'OK'}), 200
 			else:
-				return "Account already exists", 200
+				return json.dumps({'result':'Account already exists'}), 400
 
 	return abort(400)
 
@@ -192,7 +192,7 @@ def createSpotted():
 		if user:
 			res = SpottedModel.createSpotted(userId=user['userId'], anonimity=anonimity, latitude=latitude, longitude=longitude, message=message, picture=None)
 			if res:
-				return json.dumps({"spottedId": res}), 201
+				return json.dumps({'result': res}), 201
 	
 	return abort(400)
 
@@ -204,7 +204,7 @@ def spotted(spottedId):
 		if validateUuid(spottedId):
 			res = SpottedModel.getSpottedBySpottedId(spottedId)
 			if res:
-				return json.dumps(res, cls=DecimalEncoder)
+				return json.dumps({'result': res}, cls=DecimalEncoder)
 			else:
 				return abort(404)
 
@@ -227,7 +227,7 @@ def spotteds():
 		# Else, returns all spotteds with their whole data.
 		res = SpottedModel.getSpotteds(latitude=latitude, longitude=longitude, radius=radius, locationOnly=locationOnly)
 		if res:
-			return json.dumps(res, cls=DecimalEncoder)
+			return json.dumps({'result': res}, cls=DecimalEncoder)
 
 	return abort(400)
 
@@ -249,7 +249,7 @@ def spottedsByUserId(userId):
 			res = SpottedModel.getSpottedsByUserId(userId)
 
 		if type(res) == list:
-			return json.dumps(res, cls=DecimalEncoder)
+			return json.dumps({'result': res}, cls=DecimalEncoder)
 
 	return abort(400)
 
