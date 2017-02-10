@@ -6,6 +6,8 @@
   - POST
     - [Authentication] (#authentication)
     - [Create a spotted] (#create-a-spotted)
+- [Requirements] (#requirements)
+- [Installation] (#installation)
 
 ## API Documentation
 
