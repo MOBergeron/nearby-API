@@ -1,4 +1,72 @@
 # Nearby-API
+
+###Contents
+- [API Documentation] (#api-documentation)
+  - GET
+  - POST
+    - [Authentication] (#authentication)
+
+## API Documentation
+
+The base address to join the dev API is : https://nbyapi.mo-bergeron.com
+
+###Authentication
+----
+  This is the main call to be able to authenticate with the API.
+
+* **URL**
+
+  /v1/login/
+
+* **Method:**
+  
+  `POST`
+  
+*  **URL Params**
+
+   None
+
+*  **Headers Params**
+
+  **Required**
+  
+  `service-provider=Facebook / Google`
+  
+  `Authorization=Your Basic Auth token`
+
+* **Data Params**
+
+  None
+
+* **Success Response:**
+  
+  * **Code:** 201 <br />
+    **Content:** `CREATED`
+  
+  OR
+  
+  * **Code:** 200 <br />
+    **Content:** `OK`
+ 
+* **Error Response:**
+
+  * **Code:** 401 UNAUTHORIZED <br />
+    **Content:** TODO
+
+  OR
+  
+  * **Code:** 404 NOT FOUND <br />
+    **Content:** TODO
+
+* **Sample Call:**
+
+  TODO
+
+* **Notes:**
+
+  None 
+
+
 ## Requirements
 * Python 2.7
 * Flask 0.12
