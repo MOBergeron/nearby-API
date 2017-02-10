@@ -38,6 +38,26 @@ def requireAuthenticate(acceptGuest):
 		return decorated_function
 	return requireAuth
 
+@app.errorhandler(400)
+def badRequest(e):
+	return json.dumps({'error':'Bad Request'})
+
+@app.errorhandler(401)
+def unauthorized(e):
+	return json.dumps({'error':'Unauthorized'})
+
+@app.errorhandler(404)
+def notFound(e):
+	return json.dumps({'error':'Not found'})
+
+@app.errorhandler(405)
+def methodNotAllowed(e):
+	return json.dumps({'error':'Method Not Allowed'})
+
+@app.errorhandler(500)
+def internalServerError(e):
+	return json.dumps({'error':'Internal Server Error'})
+
 @app.route("/v1/login", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
 def loginFacebook():

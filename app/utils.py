@@ -3,7 +3,7 @@ import json
 import math
 import decimal
 
-from geohash import encore_uint64
+from geohash import encode_uint64
 from uuid import UUID
 
 # http://stackoverflow.com/q/6760685
@@ -55,7 +55,7 @@ def generateHashKey(geohash, length):
 		return geohash
 
 def generateGeohash(lat, lng):
-	return encore_uint64(lat, lng)
+	return encode_uint64(lat, lng)
 
 def generateBoundaries(geohash, length):
 	geohashLength = intLength(geohash)
