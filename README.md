@@ -5,6 +5,7 @@
   - GET
   - POST
     - [Authentication] (#authentication)
+    - [Create a spotted] (#create-a-spotted)
 
 ## API Documentation
 
