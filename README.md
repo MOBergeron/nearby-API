@@ -1,10 +1,132 @@
 # Nearby-API
+
+###Contents
+- [API Documentation] (#api-documentation)
+  - GET
+  - POST
+    - [Authentication] (#authentication)
+    - [Create a spotted] (#create-a-spotted)
+- [Requirements] (#requirements)
+- [Installation] (#installation)
+
+## API Documentation
+
+The base address to join the dev API is : https://nbyapi.mo-bergeron.com
+
+###Authentication
+----
+  This is the main call to be able to authenticate with the API.
+
+* **URL**
+
+  /v1/login/
+
+* **Method:**
+  
+  `POST`
+  
+*  **URL Params**
+
+   None
+
+*  **Headers Params**
+
+  **Required**:
+  
+  `service-provider=[Facebook / Google]`
+  
+  `Authorization=[Your Basic Auth token]`
+
+* **Data Params**
+
+  None
+
+* **Success Response:**
+  
+  * **Code:** 201 <br />
+    **Content:** `CREATED`
+  
+  OR
+  
+  * **Code:** 200 <br />
+    **Content:** `OK`
+ 
+* **Error Response:**
+
+  * **Code:** 401 UNAUTHORIZED <br />
+    **Content:** TODO
+
+  OR
+  
+  * **Code:** 404 NOT FOUND <br />
+    **Content:** TODO  
+
+###Create a Spotted
+----
+  This is the call to create a new Spotted message.
+
+* **URL**
+
+  /v1/spotted
+
+* **Method:**
+  
+  `POST`
+  
+*  **URL Params**
+
+   **Required**:
+   
+   `anonimity=[boolean]`
+   
+   `longitude=[float]`
+   
+   `latitude=[float]`
+   
+   `message=[string]`
+   
+   `picture=[url]`
+
+*  **Headers Params**
+
+  **Required**:
+  
+  `service-provider=Facebook / Google`
+  
+  `Authorization=Your Basic Auth token`
+
+* **Data Params**
+
+  None
+
+* **Success Response:**
+  
+  * **Code:** 201 <br />
+    **Content:** `{"spottedId" : "fe127933-f9fa-4189-b0e3-1ebb828c1714"}`
+ 
+* **Error Response:**
+
+  * **Code:** 401 UNAUTHORIZED <br />
+    **Content:** TODO
+
+  OR
+  
+  * **Code:** 400 BAD REQUEST <br />
+    **Content:** TODO
+    
+  OR
+  
+  * **Code:** 404 NOT FOUND <br />
+    **Content:** TODO
+
+
 ## Requirements
 * Python 2.7
 * Flask 0.12
 * Flask-WTF 0.14
 * Flask-Script 0.4.0
 * boto3 1.4.4
+* python-geohash 0.8.3
 
 ## Installation
 First, you have to install python 2.7. It is quite easy depending on your OS.
