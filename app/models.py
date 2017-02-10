@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 import json
+import math
 import urllib2
-import Geohash
 
+from decimal import Decimal
 from uuid import uuid4
 
-from app import app
-
 from app.connection import DynamoDBConnection
+from app.utils import generateBoundaries, generateGeohash, generateHashKey, intLength
 
-from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from oauth2client import client, crypt
 
@@ -24,16 +23,25 @@ class SpottedModel(object):
 			pass
 
 		spottedId = str(uuid4())
-		geoHash = Geohash.encode(latitude, longitude, precision=7)
+		geohash = generateGeohash(latitude, longitude)
+
+		hashKey = generateHashKey(geohash, 6)
 		DynamoDBConnection().getSpottedTable().put_item(
 			Item={
+				'hashKey': hashKey,
 				'spottedId': spottedId,
 				'userId': userId,
-				'geoHash': geoHash,
+				'geohash': geohash,
+				'geoJson': {
+					'type':'Point',
+					'coordinates': [
+						Decimal(latitude), 
+						Decimal(longitude)
+					]
+				},
 				'anonimity': anonimity,
 				'isArchived': False,
-				'latitude': latitude,
-				'longitude': longitude,
+				# Add save date
 				# Add picture link here
 				'message': message
 			}
@@ -49,7 +57,11 @@ class SpottedModel(object):
 
 		try:
 			response = DynamoDBConnection().getSpottedTable().query(
-				KeyConditionExpression=Key("spottedId").eq(spottedId)
+				IndexName='SpottedBySpottedId',
+				KeyConditionExpression="spottedId = :k1",
+				ExpressionAttributeValues={
+					':k1' : spottedId
+				}
 			)
 		except ClientError as e:
 			pass
@@ -60,11 +72,44 @@ class SpottedModel(object):
 		return res
 
 	@staticmethod
-	def getSpotteds(latitude, longitude, radius, locationOnly):
+	def getSpotteds(minLat, minLong, maxLat, maxLong, locationOnly):
 		"""Gets a list of spotteds by using the latitude, longitude and radius.
 		locationOnly returns only get the location of the returned spotteds if true.
 		"""
-		return []
+		res = False
+		geohashNW = generateGeohash(minLat, minLong)
+		geohashSW = generateGeohash(maxLat,minLong)
+		geohashNE = generateGeohash(minLat,maxLong)
+		geohashSE = generateGeohash(maxLat, maxLong)
+
+		geohash = 0
+
+		for i in range(1,20):
+			if int(geohashNW/math.pow(10,i)) == int(geohashSW/math.pow(10,i)) \
+				and int(geohashNW/math.pow(10,i)) == int(geohashNE/math.pow(10,i)) \
+				and int(geohashNW/math.pow(10,i)) == int(geohashSE/math.pow(10,i)):
+				geohash = int(geohashNW/math.pow(10,i))
+				break
+
+		lower, higher = generateBoundaries(geohash, intLength(geohashNW))
+		hashKey = generateHashKey(geohash, 6)
+
+		try:
+			response = DynamoDBConnection().getSpottedTable().query(
+				IndexName='SpottedByGeohash',
+				KeyConditionExpression="hashKey = :k1 AND geohash BETWEEN :k2 AND :k3",
+				ExpressionAttributeValues={
+					':k1' : hashKey,
+					':k2' : lower,
+					':k3' : higher
+				}
+			)
+		except ClientError as e:
+			print(e)
+		else:
+			res = response['Items']
+
+		return res
 
 	@staticmethod
 	def getMySpotteds(userId):
@@ -74,7 +119,7 @@ class SpottedModel(object):
 
 		try:
 			response = DynamoDBConnection().getSpottedTable().query(
-				IndexName='userIdIndex',
+				IndexName='SpottedByUserId',
 				KeyConditionExpression="userId = :k1",
 				ExpressionAttributeValues={
 					':k1' : userId
@@ -95,7 +140,7 @@ class SpottedModel(object):
 
 		try:
 			response = DynamoDBConnection().getSpottedTable().query(
-				IndexName='userIdIndex',
+				IndexName='SpottedByUserId',
 				KeyConditionExpression="userId = :k1",
 				FilterExpression="anonimity = :f1",
 				ExpressionAttributeValues={
@@ -113,16 +158,36 @@ class SpottedModel(object):
 class UserModel(object):
 
 	@staticmethod
-	def createUser(facebookId='unset', googleId='unset'):
+	def createUser(facebookToken='unset', googleToken='unset'):
 		"""THIS METHOD SHOULDN'T BE USED ELSEWHERE THAN IN FacebookModel AND GoogleModel.
-		Creates a user with either facebookId or googleId.
+		Creates a user with either facebookToken or googleToken.
 		"""
 		userId = str(uuid4())
+		facebookId = 'unset'
+		googleId = 'unset'
+		fullName = 'unset'
+		profilPictureURL = 'unset'
+
+		if not facebookToken == 'unset':
+			facebookId = facebookToken['user_id']
+			url = "https://graph.facebook.com/{facebookId}?fields=name,picture&access_token={accessToken}"
+			res = urllib2.urlopen(url.format(facebookId=facebookId,accessToken=facebookToken['token']))
+			data = json.loads(res.read())
+			profilPictureURL = data['picture']['data']['url']
+			fullName = data['name']
+		
+		if not googleToken == 'unset':
+			googleId = googleToken['sub']
+			profilPictureURL = googleToken['picture']
+			fullName = googleToken['name']
+
 		DynamoDBConnection().getUserTable().put_item(
 			Item={
 				'userId': userId,
 				'facebookId': facebookId,
 				'googleId': googleId,
+				'fullName': fullName,
+				'profilPictureURL': profilPictureURL,
 				'disabled': False
 			}
 		)
@@ -210,21 +275,22 @@ class UserModel(object):
 class FacebookModel(UserModel):
 
 	@staticmethod
-	def createUserWithFacebook(facebookId):
-		"""Creates a user related to a facebookId.
+	def createUserWithFacebook(facebookToken):
+		"""Creates a user related to a facebookToken.
 		"""
-		if not FacebookModel.doesFacebookIdExist(facebookId):
-			return UserModel.createUser(facebookId=facebookId)
+		if not FacebookModel.doesFacebookIdExist(facebookToken['user_id']):
+			return UserModel.createUser(facebookToken=facebookToken)
 		return False
 
 	@staticmethod
-	def getTokenValidation(token):
+	def getTokenValidation(accessToken, token):
 		"""Calls Facebook to receive a validation of a Facebook user token.
 		"""
-		url = app.config['FACEBOOK_DEBUG_URL']
-		accessToken = app.config['FACEBOOK_ACCESS_TOKEN']
-		res = urllib2.urlopen(url.format(input_token=token, access_token=accessToken))
-		return json.loads(res.read())['data']
+		url = "https://graph.facebook.com/debug_token?input_token={input_token}&access_token={accessToken}"
+		res = urllib2.urlopen(url.format(input_token=token, accessToken=accessToken))
+		data = json.loads(res.read())['data']
+		data['token'] = token
+		return data
 
 	@staticmethod
 	def getUserByFacebookId(facebookId):
@@ -235,7 +301,10 @@ class FacebookModel(UserModel):
 		try:
 			response = DynamoDBConnection().getUserTable().query(
 				IndexName='facebookIdIndex',
-				KeyConditionExpression=Key('facebookId').eq(facebookId)
+				KeyConditionExpression="facebookId = :k1",
+				ExpressionAttributeValues={
+					':k1': facebookId
+				}
 			)
 		except ClientError as e:
 			pass
@@ -298,22 +367,20 @@ class FacebookModel(UserModel):
 class GoogleModel(UserModel):
 
 	@staticmethod
-	def createUserWithGoogle(googleId):
-		"""Creates a user related to a googleId.
+	def createUserWithGoogle(googleToken):
+		"""Creates a user related to a googleToken.
 		"""
-		if not GoogleModel.doesGoogleIdExist(googleId):
-			return UserModel.createUser(googleId=googleId)
+		if not GoogleModel.doesGoogleIdExist(googleToken['sub']):
+			return UserModel.createUser(googleToken=googleToken)
 		return False
 
 	@staticmethod
-	def getTokenValidation(token):
+	def getTokenValidation(clientId, token):
 		"""Calls Google to receive a validation of a Google user token.
 		"""
-		CLIENT_ID = app.config['GOOGLE_CLIENT_ID']
-		
 		tokenInfo = None
 		try:
-			tokenInfo = client.verify_id_token(token, CLIENT_ID)
+			tokenInfo = client.verify_id_token(token, clientId)
 
 			if tokenInfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
 				raise crypt.AppIdentityError("Wrong issuer.")
@@ -333,7 +400,10 @@ class GoogleModel(UserModel):
 		try:
 			response = DynamoDBConnection().getUserTable().query(
 				IndexName='googleIdIndex',
-				KeyConditionExpression=Key('googleId').eq(googleId)
+				KeyConditionExpression="googleId = :k1",
+				ExpressionAttributeValues={
+					':k1': googleId
+				}
 			)
 		except ClientError as e:
 			print(e)

@@ -80,11 +80,19 @@ class DynamoDBConnection(object):
 			TableName='spotted',
 			KeySchema=[
 				{
-					'AttributeName': 'spottedId',
+					'AttributeName': 'hashKey',
 					'KeyType': 'HASH'
 				},
+				{
+					'AttributeName': 'spottedId',
+					'KeyType': 'RANGE'
+				}
 			],
 			AttributeDefinitions=[
+				{
+					'AttributeName': 'hashKey',
+					'AttributeType': 'N'
+				},
 				{
 					'AttributeName': 'spottedId',
 					'AttributeType': 'S'
@@ -94,17 +102,13 @@ class DynamoDBConnection(object):
 					'AttributeType': 'S'
 				},
 				{
-					'AttributeName': 'geoHash',
-					'AttributeType': 'S'
+					'AttributeName': 'geohash',
+					'AttributeType': 'N'
 				}
 			],
-			ProvisionedThroughput={
-				'ReadCapacityUnits': 10,
-				'WriteCapacityUnits': 10
-			},
 			GlobalSecondaryIndexes=[
 				{
-					'IndexName': 'userIdIndex',
+					'IndexName': 'SpottedByUserId',
 					'KeySchema': [
 						{
 							'AttributeName': 'userId',
@@ -120,19 +124,15 @@ class DynamoDBConnection(object):
 					}
 				},
 				{
-					'IndexName': 'geoIndex',
+					'IndexName': 'SpottedBySpottedId',
 					'KeySchema': [
 						{
-							'AttributeName': 'geoHash',
+							'AttributeName': 'spottedId',
 							'KeyType': 'HASH',
 						},
-						{
-							'AttributeName': 'spottedId',
-							'KeyType': 'RANGE',
-						}
 					],
 					'Projection': {
-						'ProjectionType': 'KEYS_ONLY',
+						'ProjectionType': 'ALL',
 					},
 					'ProvisionedThroughput': {
 						'ReadCapacityUnits': 2,
@@ -140,6 +140,28 @@ class DynamoDBConnection(object):
 					}
 				}
 			],
+			LocalSecondaryIndexes=[
+				{
+					'IndexName': 'SpottedByGeohash',
+					'KeySchema': [
+						{
+							'AttributeName': 'hashKey',
+							'KeyType': 'HASH',
+						},
+						{
+							'AttributeName': 'geohash',
+							'KeyType': 'RANGE',
+						},
+					],
+					'Projection': {
+						'ProjectionType': 'ALL',
+					}
+				},
+			],
+			ProvisionedThroughput={
+				'ReadCapacityUnits': 10,
+				'WriteCapacityUnits': 10
+			}
 		)
 		print("Local tables are created.")
 

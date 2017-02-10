@@ -9,7 +9,7 @@ from app.forms import ContactForm, CreateSpottedForm, GetSpottedsForm, MergeFace
 from app.models import SpottedModel, UserModel, FacebookModel, GoogleModel
 from app.utils import DecimalEncoder, validateUuid
 
-from flask import abort, request
+from flask import g, abort, request
 
 # Decorators
 def requireAuthenticate(acceptGuest):
@@ -23,14 +23,16 @@ def requireAuthenticate(acceptGuest):
 						return f(*args, **kwargs)
 				else:
 					if request.headers['Service-Provider'] == 'Facebook':
-						facebookToken = FacebookModel.getTokenValidation(auth.password)
-						if facebookToken['is_valid'] and facebookToken['user_id'] == auth.username:
+						g.facebookToken = FacebookModel.getTokenValidation(app.config['FACEBOOK_ACCESS_TOKEN'], auth.password)
+						if g.facebookToken['is_valid'] and g.facebookToken['user_id'] == auth.username:
 							if str(request.url_rule) == '/v1/login' or FacebookModel.doesFacebookIdExist(auth.username):
+								g.loginWith = 'Facebook'
 								return f(*args, **kwargs)
 					elif request.headers['Service-Provider'] == 'Google':
-						googleToken = GoogleModel.getTokenValidation(auth.password)
-						if googleToken and googleToken['sub'] == auth.username:
+						g.googleToken = GoogleModel.getTokenValidation(app.config['GOOGLE_CLIENT_ID'], auth.password)
+						if g.googleToken and g.googleToken['sub'] == auth.username:
 							if str(request.url_rule) == '/v1/login' or GoogleModel.doesGoogleIdExist(auth.username):
+								g.loginWith = 'Google'	
 								return f(*args, **kwargs)
 			return abort(401)
 		return decorated_function
@@ -39,16 +41,16 @@ def requireAuthenticate(acceptGuest):
 @app.route("/v1/login", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
 def loginFacebook():
-	if request.headers['Service-Provider'] == 'Facebook':
+	if g.loginWith == 'Facebook':
 		if not FacebookModel.doesFacebookIdExist(request.authorization.username):
-			if FacebookModel.createUserWithFacebook(request.authorization.username):
+			if FacebookModel.createUserWithFacebook(g.facebookToken):
 				return "Created", 201
 		else:
 			return "OK", 200
 
-	elif request.headers['Service-Provider'] == 'Google':
+	elif g.loginWith == 'Google':
 		if not GoogleModel.doesGoogleIdExist(request.authorization.username):
-			if GoogleModel.createUserWithGoogle(request.authorization.username):
+			if GoogleModel.createUserWithGoogle(g.googleToken):
 				return "Created", 201
 		else:
 			return "OK", 200
@@ -72,8 +74,8 @@ def mergeFacebook():
 	"""
 	form = MergeFacebookForm()
 	# Check if the Service-Provider is Google
-	if form.validate_on_submit() and request.headers['Service-Provider'] == 'Google':
-		facebookToken = FacebookModel.getTokenValidation(form.token.data)
+	if form.validate_on_submit() and g.loginWith == 'Google':
+		facebookToken = FacebookModel.getTokenValidation(app.config['FACEBOOK_ACCESS_TOKEN'], form.token.data)
 		if facebookToken['is_valid'] and facebookToken['user_id'] == form.facebookId.data:
 			# Continue only if the account doesn't exist yet.
 			if FacebookModel.doesFacebookIdExist(form.facebookId.data):
@@ -93,8 +95,8 @@ def mergeGoogle():
 	"""
 	form = MergeGoogleForm()
 	# Check if the Service-Provider is Facebook
-	if form.validate_on_submit() and request.headers['Service-Provider'] == 'Facebook':
-		googleToken = GoogleModel.getTokenValidation(form.token.data)
+	if form.validate_on_submit() and g.loginWith == 'Facebook':
+		googleToken = GoogleModel.getTokenValidation(app.config['GOOGLE_CLIENT_ID'], form.token.data)
 		if googleToken and googleToken['sub'] == form.googleId.data:
 			# Continue only if the account doesn't exist yet.
 			if GoogleModel.doesGoogleIdExist(form.googleId.data):
@@ -114,9 +116,9 @@ def linkFacebook():
 	"""
 	form = LinkFacebookForm()
 	# Check if the Service-Provider is Google
-	if form.validate_on_submit() and request.headers['Service-Provider'] == 'Google':
-		facebookToken = FacebookModel.getTokenValidation(form.token.data)
-		if facebookToken['is_valid'] and form.facebookId.data == facebookToken['user_id']:
+	if form.validate_on_submit() and g.loginWith == 'Google':
+		facebookToken = FacebookModel.getTokenValidation(app.config['FACEBOOK_ACCESS_TOKEN'], form.token.data)
+		if facebookToken['is_valid'] and facebookToken['user_id'] == form.facebookId.data:
 			# Continue only if the account doesn't exist yet.
 			if not FacebookModel.doesFacebookIdExist(form.facebookId.data):
 				user = GoogleModel.getUserByGoogleId(request.authorization.username)
@@ -135,8 +137,8 @@ def linkGoogle():
 	"""
 	form = LinkGoogleForm()
 	# Check if the Service-Provider is Facebook
-	if form.validate_on_submit() and request.headers['Service-Provider'] == 'Facebook':
-		googleToken = GoogleModel.getTokenValidation(form.token.data)
+	if form.validate_on_submit() and g.loginWith == 'Facebook':
+		googleToken = GoogleModel.getTokenValidation(app.config['GOOGLE_CLIENT_ID'], form.token.data)
 		if googleToken and googleToken['sub'] == form.googleId.data:
 			# Continue only if the account doesn't exist yet.
 			if not GoogleModel.doesGoogleIdExist(form.googleId.data):
@@ -162,9 +164,9 @@ def createSpotted():
 		message = form.message.data
 		#picture = form.picture.data
 
-		if request.headers['Service-Provider'] == 'Facebook':
+		if g.loginWith == 'Facebook':
 			user = FacebookModel.getUserByFacebookId(request.authorization.username)
-		if request.headers['Service-Provider'] == 'Google':
+		elif g.loginWith == 'Google':
 			user = GoogleModel.getUserByGoogleId(request.authorization.username)
 
 		if user:
@@ -195,10 +197,10 @@ def spotteds():
 
 	# Returns all corresponding spotteds according to arguments
 	if form.validate():
-		latTL = form.latTL.data
-		longTL = form.longTL.data
-		latBR = form.latBR.data
-		longBR = form.longBR.data
+		minLat = form.minLat.data
+		minLong = form.minLong.data
+		maxLat = form.maxLat.data
+		maxLong = form.maxLong.data
 		locationOnly = form.locationOnly.data
 
 		# If locationOnly is True, returns only the locations for all the spotteds.

@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import json
+import math
 import decimal
 
+from geohash import encore_uint64
 from uuid import UUID
 
 # http://stackoverflow.com/q/6760685
@@ -31,3 +33,35 @@ def validateUuid(uuid):
 		return False
 
 	return val.hex == uuid
+
+# http://stackoverflow.com/a/2189827
+def intLength(n):
+	if n > 0:
+		digits = int(math.log10(n))+1
+	elif n == 0:
+		digits = 1
+	else:
+		digits = int(math.log10(-n))+2
+
+	return digits
+
+def generateHashKey(geohash, length):
+	geohashLength = intLength(geohash)
+	if geohashLength > length:
+		return geohash/int(math.pow(10, geohashLength-length))
+	elif geohashLength < length:
+		return geohash*int(math.pow(10, length-geohashLength))
+	else:
+		return geohash
+
+def generateGeohash(lat, lng):
+	return encore_uint64(lat, lng)
+
+def generateBoundaries(geohash, length):
+	geohashLength = intLength(geohash)
+	if geohashLength < length:
+		return (geohash*int(math.pow(10, length-geohashLength)), ((geohash+1)*int(math.pow(10, length-geohashLength)))-1)
+	elif geohashLength > length:
+		return (geohash/int(math.pow(10, geohashLength-length)), geohash/int(math.pow(10, geohashLength-length)))
+	else:
+		return (geohash, geohash)
