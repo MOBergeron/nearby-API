@@ -18,30 +18,35 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 ----
   The following error messages can be encountered when calling any route.
   
-* **Error Response:**
+* **Error Response**
 
   * **Code:** 400 BAD REQUEST <br />
     **Content:** `{"error" : "Bad Request"}`
+    **Meaning:** Something went wrong in your request. Specified on each route. <br />
   
   OR
   
   * **Code:** 401 UNAUTHORIZED <br />
     **Content:** `{"error" : "Unauthorized"}`
+    **Meaning:** Your Basic authorization was refused. <br />
 
   OR
   
   * **Code:** 404 NOT FOUND <br />
     **Content:** `{"error" : "Not found"}`
+    **Meaning:** The requested route does not exist. <br />
 
   OR
   
   * **Code:** 405 METHOD NOT ALLOWED <br />
     **Content:** `{"error" : "Method Not Allowed"}`
+    **Meaning:** The method used on request is not allowed to this route. <br />
 
   OR
   
   * **Code:** 500 INTERNAL SERVER ERROR <br />
     **Content:** `{"error" : "Internal Server Error"}`
+    **Meaning:** Something went wrong in the server. Sorry about that.<br />
 
 ###Authentication
 ----
@@ -51,7 +56,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   /v1/login/
 
-* **Method:**
+* **Method**
   
   `POST`
   
@@ -61,7 +66,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 *  **Headers Params**
 
-  **Required**:
+  **Required:**
   
   `Service-Provider: {Facebook} OR {Google}`
   
@@ -71,20 +76,23 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   None
 
-* **Success Response:**
+* **Success Response**
   
   * **Code:** 201 <br />
-    **Content:** `CREATED`
+    **Content:** `{"result": "Created"}`
+    **Meaning:** A new account has been created and the login was successful <br />
   
   OR
   
   * **Code:** 200 <br />
-    **Content:** `OK`
+    **Content:** `{"result": "OK"}`
+    **Meaning:** The account already existed and the login was successful <br />
  
-* **Error Response:**
+* **Error Response**
 
   * **Code:** 400 BAD REQUEST <br />
     **Content:** `{"error" : "Bad Request"}`
+    **Meaning:** Not supposed to happen <br />
 
 ###Create a Spotted
 ----
@@ -94,13 +102,25 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   /v1/spotted
 
-* **Method:**
+* **Method**
   
   `POST`
   
 *  **URL Params**
 
-   **Required**:
+    None
+
+*  **Headers Params**
+
+  **Required:**
+  
+  `Service-Provider: {Facebook} OR {Google}`
+  
+  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+
+* **Data Params**
+
+   **Required:**
    
    `anonimity=[boolean]`
    
@@ -110,29 +130,21 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
    
    `message=[string]`
    
+   **Optional:**
+   
    `picture=[url]`
 
-*  **Headers Params**
-
-  **Required**:
-  
-  `Service-Provider: {Facebook} OR {Google}`
-  
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
-
-* **Data Params**
-
-  None
-
-* **Success Response:**
+* **Success Response**
   
   * **Code:** 201 <br />
     **Content:** `{"result" : "fe127933-f9fa-4189-b0e3-1ebb828c1714"}`
+    **Meaning:** A Spotted hash been created. The result is the Spotted ID. <br />
  
-* **Error Response:**
+* **Error Response**
 
   * **Code:** 400 BAD REQUEST <br />
     **Content:** `{"error" : "Bad Request"}`
+    **Meaning:** The form wasn't valid OR your user wasn't found in the database. <br />
 
 ## Requirements
 * Python 2.7
