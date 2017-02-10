@@ -9,7 +9,7 @@
     - [Create a spotted] (#create-a-spotted)
     - [Get a spotted] (#get-a-spotted)
     - [Get my Spotteds] (#get-my-spotteds)
-    - [Get Spotteds by user ID] (#get-spotted-by-user-id)
+    - [Get Spotteds by user ID] (#get-spotteds-by-user-id)
 - [Requirements] (#requirements)
 - [Installation] (#installation)
 
