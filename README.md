@@ -31,9 +31,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   **Required**:
   
-  `service-provider=Facebook / Google`
+  `service-provider=[Facebook / Google]`
   
-  `Authorization=Your Basic Auth token`
+  `Authorization=[Your Basic Auth token]`
 
 * **Data Params**
 
@@ -85,9 +85,13 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
    **Required**:
    
    `anonimity=[boolean]`
+   
    `longitude=[float]`
+   
    `latitude=[float]`
+   
    `message=[string]`
+   
    `picture=[url]`
 
 *  **Headers Params**
