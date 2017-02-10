@@ -48,7 +48,7 @@ def unauthorized(e):
 
 @app.errorhandler(404)
 def notFound(e):
-	return json.dumps({'error':'Not found'})
+	return json.dumps({'error':'Not Found'})
 
 @app.errorhandler(405)
 def methodNotAllowed(e):
