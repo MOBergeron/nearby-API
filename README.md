@@ -57,16 +57,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   OR
   
   * **Code:** 404 NOT FOUND <br />
-    **Content:** TODO
-
-* **Sample Call:**
-
-  TODO
-
-* **Notes:**
-
-  None 
-  
+    **Content:** TODO  
 
 ###Create a Spotted
 ----
@@ -126,15 +117,6 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Code:** 404 NOT FOUND <br />
     **Content:** TODO
 
-* **Sample Call:**
-
-  TODO
-
-* **Notes:**
-
-  None 
-
-
 
 ## Requirements
 * Python 2.7
@@ -142,6 +124,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 * Flask-WTF 0.14
 * Flask-Script 0.4.0
 * boto3 1.4.4
+* python-geohash 0.8.3
 
 ## Installation
 First, you have to install python 2.7. It is quite easy depending on your OS.
