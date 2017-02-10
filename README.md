@@ -65,6 +65,70 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 * **Notes:**
 
   None 
+  
+
+###Create a Spotted
+----
+  This is the call to create a new Spotted message.
+
+* **URL**
+
+  /v1/spotted
+
+* **Method:**
+  
+  `POST`
+  
+*  **URL Params**
+
+   **Required**:
+   
+   `anonimity=[boolean]`
+   `longitude=[float]`
+   `latitude=[float]`
+   `message=[string]`
+   `picture=[url]`
+
+*  **Headers Params**
+
+  **Required**:
+  
+  `service-provider=Facebook / Google`
+  
+  `Authorization=Your Basic Auth token`
+
+* **Data Params**
+
+  None
+
+* **Success Response:**
+  
+  * **Code:** 201 <br />
+    **Content:** `{"spottedId" : "fe127933-f9fa-4189-b0e3-1ebb828c1714"}`
+ 
+* **Error Response:**
+
+  * **Code:** 401 UNAUTHORIZED <br />
+    **Content:** TODO
+
+  OR
+  
+  * **Code:** 400 BAD REQUEST <br />
+    **Content:** TODO
+    
+  OR
+  
+  * **Code:** 404 NOT FOUND <br />
+    **Content:** TODO
+
+* **Sample Call:**
+
+  TODO
+
+* **Notes:**
+
+  None 
+
 
 
 ## Requirements
