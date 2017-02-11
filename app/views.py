@@ -18,8 +18,9 @@ def requireAuthenticate(acceptGuest):
 		def decorated_function(*args, **kwargs):
 			auth = request.authorization
 			if auth:
-				if acceptGuest and auth.username == app.config['GUEST_ID']:
+				if acceptGuest and request.headers['Service-Provider'] == 'Guest' and auth.username == app.config['GUEST_ID']:
 					if auth.password == app.config['GUEST_TOKEN']:
+						g.loginWith = 'Guest'
 						return f(*args, **kwargs)
 				else:
 					if request.headers['Service-Provider'] == 'Facebook':
@@ -45,6 +46,10 @@ def badRequest(e):
 @app.errorhandler(401)
 def unauthorized(e):
 	return json.dumps({'error':'Unauthorized'}), 401
+
+@app.errorhandler(403)
+def forbidden(e):
+	return json.dumps({'error':'Forbidden'}), 403
 
 @app.errorhandler(404)
 def notFound(e):
@@ -145,8 +150,12 @@ def linkFacebook():
 				if user and user['facebookId'] == 'unset':
 					if FacebookModel.linkFacebookIdToUserId(user['userId'], form.facebookId.data):
 						return json.dumps({'result':'OK'}), 200
+				else:
+					return abort(403)
 			else:
-				return json.dumps({'result':'Account already exists'}), 400
+				return abort(403)
+		else:
+			return abort(401)
 
 	return abort(400)
 
@@ -166,8 +175,12 @@ def linkGoogle():
 				if user and user['googleId'] == 'unset':
 					if GoogleModel.linkGoogleIdToUserId(user['userId'], form.googleId.data):
 						return json.dumps({'result':'OK'}), 200
+				else:
+					return abort(403)
 			else:
-				return json.dumps({'result':'Account already exists'}), 400
+				return abort(403)
+		else:
+			return abort(401)
 
 	return abort(400)
 
