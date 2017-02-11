@@ -7,11 +7,14 @@
   - [Error Messages] (#error-messages)
   - GET
     - [Get a spotted] (#get-a-spotted)
+    - [Get Spotteds] (#get-spotteds)
     - [Get my Spotteds] (#get-my-spotteds)
     - [Get Spotteds by user ID] (#get-spotteds-by-user-id)
   - POST
     - [Authentication] (#authentication)
     - [Create a spotted] (#create-a-spotted)
+    - [Link Facebook] (#link-facebook)
+    - [Link Google] (#link-google)
 - [Requirements] (#requirements)
 - [Installation] (#installation)
 
@@ -27,7 +30,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   * **Code:** 400 BAD REQUEST
   * **Content:** `{"error" : "Bad Request"}`
-  * **Meaning:** Something went wrong in your request. Specified on each route.
+  * **Meaning:** Something went wrong in your request. Usually a validation error. Specified on each route.
   
   OR
   
@@ -74,9 +77,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   **Required:**
   
-  `Service-Provider: {Facebook} OR {Google}`
+  `Service-Provider: Facebook OR Google OR Guest`
   
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+  `Authorization: Basic {Base64 of ID:token#}`
 
 * **Data Params**
 
@@ -120,6 +123,91 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Not Found"}`
   * **Meaning:** The requested Spotted was not found.
 
+###Get Spotteds
+----
+  This is the call to get Spotted messages.
+
+* **URL**
+
+  /v1/spotteds
+
+* **Method**
+  
+  `GET`
+  
+*  **URL Params**
+
+  **Required:**
+
+  `minLat=[float]`
+
+  `maxLat=[float]`
+  
+  `minLong=[float]`
+  
+  `maxLong=[float]`
+  
+  `locationOnly=[boolean]`
+
+*  **Headers Params**
+
+  **Required:**
+  
+  `Service-Provider: Facebook OR Google OR Guest`
+  
+  `Authorization: Basic {Base64 of ID:token#}`
+
+* **Data Params**
+
+    None
+
+* **Success Response**
+  
+  * **Code:** 200
+  * **Content:** 
+```json
+{
+    "result": [{
+        "anonimity": true,
+        "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
+        "geoJson": {
+            "type": "Point",
+            "coordinates": [
+                70,
+                70
+            ]
+        },
+        "hashKey": 159990,
+        "geohash": 15999003033159630343,
+        "isArchived": false,
+        "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
+        "message": "Lorem Ipsum1"
+    }, {
+        "anonimity": false,
+        "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
+        "geoJson": {
+            "type": "Point",
+            "coordinates": [
+                70,
+                70
+            ]
+        },
+        "hashKey": 159990,
+        "geohash": 15999003033159630343,
+        "isArchived": false,
+        "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
+        "message": "Lorem Ipsum2"
+    }]
+}
+```
+  * **Meaning:** A list of spotted object is returned.
+ 
+* **Error Response**
+
+  * **Code:** 400 BAD REQUEST
+  * **Content:** `{"error" : "Bad Request"}`
+  * **Meaning:** Validation error.
+
 ###Get my Spotteds
 ----
   This is the call to get my Spotted messages.
@@ -140,9 +228,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   **Required:**
   
-  `Service-Provider: {Facebook} OR {Google}`
+  `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+  `Authorization: Basic {Base64 of ID:token#}`
 
 * **Data Params**
 
@@ -221,9 +309,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   **Required:**
   
-  `Service-Provider: {Facebook} OR {Google}`
+  `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+  `Authorization: Basic {Base64 of ID:token#}`
 
 * **Data Params**
 
@@ -297,9 +385,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   **Required:**
   
-  `Service-Provider: {Facebook} OR {Google}`
+  `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+  `Authorization: Basic {Base64 of ID:token#}`
 
 * **Data Params**
 
@@ -343,9 +431,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   **Required:**
   
-  `Service-Provider: {Facebook} OR {Google}`
+  `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+  `Authorization: Basic {Base64 of ID:token#}`
 
 * **Data Params**
 
@@ -374,6 +462,118 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Code:** 400 BAD REQUEST
   * **Content:** `{"error" : "Bad Request"}`
   * **Meaning:** The form wasn't valid OR your user wasn't found in the database.
+
+###Link Facebook
+----
+  This is the call to link a Facebook to an existing Nearby account linked with Google
+
+* **URL**
+
+  /v1/link/facebook
+
+* **Method**
+  
+  `POST`
+  
+*  **URL Params**
+
+   None
+
+*  **Headers Params**
+
+  **Required:**
+  
+  `Service-Provider: Google`
+  
+  `Authorization: Basic {Base64 of ID:token#}`
+
+* **Data Params**
+
+   **Required:**
+   
+   `facebookId=[string]`
+   
+   `token=[string]`
+
+* **Success Response**
+  
+  * **Code:** 200
+  * **Content:** `{"result": "OK"}`
+  * **Meaning:** Facebook account was successfully linked to Nearby account.
+ 
+* **Error Response**
+
+  * **Code:** 400 BAD REQUEST
+  * **Content:** `{"error" : "Bad Request"}`
+  * **Meaning:** Validation error.
+
+  OR
+
+  * **Code:** 401 Unauthorized
+  * **Content:** `{"error" : "Unauthorized"}`
+  * **Meaning:** Couldn't authenticate the Facebook ID with Facebook token.
+
+  OR
+
+  * **Code:** 403 FORBIDDEN
+  * **Content:** `{"error" : "Forbidden"}`
+  * **Meaning:** That Facebook account already exists in Nearby system OR that Nearby account is already linked to a Facebook account. It can't be linked.
+
+###Link Google
+----
+  This is the call to link a Google to an existing Nearby account linked with Facebook
+
+* **URL**
+
+  /v1/link/facebook
+
+* **Method**
+  
+  `POST`
+  
+*  **URL Params**
+
+   None
+
+*  **Headers Params**
+
+  **Required:**
+  
+  `Service-Provider: Facebook`
+  
+  `Authorization: Basic {Base64 of ID:token#}`
+
+* **Data Params**
+
+   **Required:**
+   
+   `googleId=[string]`
+   
+   `token=[string]`
+
+* **Success Response**
+  
+  * **Code:** 200
+  * **Content:** `{"result": "OK"}`
+  * **Meaning:** Google account was successfully linked to Nearby account.
+ 
+* **Error Response**
+
+  * **Code:** 400 BAD REQUEST
+  * **Content:** `{"error" : "Bad Request"}`
+  * **Meaning:** Validation error.
+
+  OR
+
+  * **Code:** 401 Unauthorized
+  * **Content:** `{"error" : "Unauthorized"}`
+  * **Meaning:** Couldn't authenticate the Google ID with Google token.
+
+  OR
+
+  * **Code:** 403 FORBIDDEN
+  * **Content:** `{"error" : "Forbidden"}`
+  * **Meaning:** That Google account already exists in Nearby system OR that Nearby account is already linked to a Google account. It can't be linked.
 
 ## Requirements
 * Python 2.7
