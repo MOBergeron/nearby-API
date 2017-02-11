@@ -1,3 +1,5 @@
+<p align="center"><img src="https://cloud.githubusercontent.com/assets/838845/22188506/d9a96e0c-e0e3-11e6-9c3f-84a01cf50039.png"></p>
+
 # Nearby-API
 
 ###Contents
