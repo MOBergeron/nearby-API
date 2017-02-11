@@ -7,6 +7,7 @@
   - [Error Messages] (#error-messages)
   - GET
     - [Get a spotted] (#get-a-spotted)
+    - [Get Spotteds] (#get-spotteds)
     - [Get my Spotteds] (#get-my-spotteds)
     - [Get Spotteds by user ID] (#get-spotteds-by-user-id)
   - POST
@@ -76,9 +77,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   **Required:**
   
-  `Service-Provider: {Facebook} OR {Google}`
+  `Service-Provider: Facebook OR Google OR Guest`
   
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+  `Authorization: Basic {Base64 of ID:token#}`
 
 * **Data Params**
 
@@ -122,6 +123,91 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Not Found"}`
   * **Meaning:** The requested Spotted was not found.
 
+###Get Spotteds
+----
+  This is the call to get Spotted messages.
+
+* **URL**
+
+  /v1/spotteds
+
+* **Method**
+  
+  `GET`
+  
+*  **URL Params**
+
+  **Required:**
+
+  `minLat=[float]`
+
+  `maxLat=[float]`
+  
+  `minLong=[float]`
+  
+  `maxLong=[float]`
+  
+  `locationOnly=[boolean]`
+
+*  **Headers Params**
+
+  **Required:**
+  
+  `Service-Provider: Facebook OR Google OR Guest`
+  
+  `Authorization: Basic {Base64 of ID:token#}`
+
+* **Data Params**
+
+    None
+
+* **Success Response**
+  
+  * **Code:** 200
+  * **Content:** 
+```json
+{
+    "result": [{
+        "anonimity": true,
+        "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
+        "geoJson": {
+            "type": "Point",
+            "coordinates": [
+                70,
+                70
+            ]
+        },
+        "hashKey": 159990,
+        "geohash": 15999003033159630343,
+        "isArchived": false,
+        "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
+        "message": "Lorem Ipsum1"
+    }, {
+        "anonimity": false,
+        "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
+        "geoJson": {
+            "type": "Point",
+            "coordinates": [
+                70,
+                70
+            ]
+        },
+        "hashKey": 159990,
+        "geohash": 15999003033159630343,
+        "isArchived": false,
+        "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
+        "message": "Lorem Ipsum2"
+    }]
+}
+```
+  * **Meaning:** A list of spotted object is returned.
+ 
+* **Error Response**
+
+  * **Code:** 400 BAD REQUEST
+  * **Content:** `{"error" : "Bad Request"}`
+  * **Meaning:** Validation error.
+
 ###Get my Spotteds
 ----
   This is the call to get my Spotted messages.
@@ -142,9 +228,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   **Required:**
   
-  `Service-Provider: {Facebook} OR {Google}`
+  `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+  `Authorization: Basic {Base64 of ID:token#}`
 
 * **Data Params**
 
@@ -223,9 +309,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   **Required:**
   
-  `Service-Provider: {Facebook} OR {Google}`
+  `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+  `Authorization: Basic {Base64 of ID:token#}`
 
 * **Data Params**
 
@@ -299,9 +385,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   **Required:**
   
-  `Service-Provider: {Facebook} OR {Google}`
+  `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+  `Authorization: Basic {Base64 of ID:token#}`
 
 * **Data Params**
 
@@ -345,9 +431,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   **Required:**
   
-  `Service-Provider: {Facebook} OR {Google}`
+  `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+  `Authorization: Basic {Base64 of ID:token#}`
 
 * **Data Params**
 
@@ -399,7 +485,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Google`
   
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+  `Authorization: Basic {Base64 of ID:token#}`
 
 * **Data Params**
 
@@ -455,7 +541,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook`
   
-  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+  `Authorization: Basic {Base64 of ID:token#}`
 
 * **Data Params**
 
