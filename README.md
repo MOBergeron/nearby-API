@@ -29,7 +29,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   * **Code:** 400 BAD REQUEST
   * **Content:** `{"error" : "Bad Request"}`
-  * **Meaning:** Something went wrong in your request. Specified on each route.
+  * **Meaning:** Something went wrong in your request. Usually a validation error. Specified on each route.
   
   OR
   
