@@ -40,23 +40,23 @@ def requireAuthenticate(acceptGuest):
 
 @app.errorhandler(400)
 def badRequest(e):
-	return json.dumps({'error':'Bad Request'})
+	return json.dumps({'error':'Bad Request'}), 400
 
 @app.errorhandler(401)
 def unauthorized(e):
-	return json.dumps({'error':'Unauthorized'})
+	return json.dumps({'error':'Unauthorized'}), 401
 
 @app.errorhandler(404)
 def notFound(e):
-	return json.dumps({'error':'Not Found'})
+	return json.dumps({'error':'Not Found'}), 404
 
 @app.errorhandler(405)
 def methodNotAllowed(e):
-	return json.dumps({'error':'Method Not Allowed'})
+	return json.dumps({'error':'Method Not Allowed'}), 405
 
 @app.errorhandler(500)
 def internalServerError(e):
-	return json.dumps({'error':'Internal Server Error'})
+	return json.dumps({'error':'Internal Server Error'}), 500
 
 @app.route("/v1/login", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
