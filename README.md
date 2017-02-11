@@ -12,6 +12,8 @@
   - POST
     - [Authentication] (#authentication)
     - [Create a spotted] (#create-a-spotted)
+    - [Link Facebook] (#link-facebook)
+    - [Link Google] (#link-google)
 - [Requirements] (#requirements)
 - [Installation] (#installation)
 
@@ -374,6 +376,118 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Code:** 400 BAD REQUEST
   * **Content:** `{"error" : "Bad Request"}`
   * **Meaning:** The form wasn't valid OR your user wasn't found in the database.
+
+###Link Facebook
+----
+  This is the call to link a Facebook to an existing Nearby account linked with Google
+
+* **URL**
+
+  /v1/link/facebook
+
+* **Method**
+  
+  `POST`
+  
+*  **URL Params**
+
+   None
+
+*  **Headers Params**
+
+  **Required:**
+  
+  `Service-Provider: Google`
+  
+  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+
+* **Data Params**
+
+   **Required:**
+   
+   `facebookId=[string]`
+   
+   `token=[string]`
+
+* **Success Response**
+  
+  * **Code:** 200
+  * **Content:** `{"result": "OK"}`
+  * **Meaning:** Facebook account was successfully linked to Nearby account.
+ 
+* **Error Response**
+
+  * **Code:** 400 BAD REQUEST
+  * **Content:** `{"error" : "Bad Request"}`
+  * **Meaning:** Validation error.
+
+  OR
+
+  * **Code:** 401 Unauthorized
+  * **Content:** `{"error" : "Unauthorized"}`
+  * **Meaning:** Couldn't authenticate the Facebook ID with Facebook token.
+
+  OR
+
+  * **Code:** 403 FORBIDDEN
+  * **Content:** `{"error" : "Forbidden"}`
+  * **Meaning:** That Facebook account already exists in Nearby system OR that Nearby account is already linked to a Facebook account. It can't be linked.
+
+###Link Google
+----
+  This is the call to link a Google to an existing Nearby account linked with Facebook
+
+* **URL**
+
+  /v1/link/facebook
+
+* **Method**
+  
+  `POST`
+  
+*  **URL Params**
+
+   None
+
+*  **Headers Params**
+
+  **Required:**
+  
+  `Service-Provider: Facebook`
+  
+  `Authorization: Basic {Base64 of facebookId:facebookToken}`
+
+* **Data Params**
+
+   **Required:**
+   
+   `googleId=[string]`
+   
+   `token=[string]`
+
+* **Success Response**
+  
+  * **Code:** 200
+  * **Content:** `{"result": "OK"}`
+  * **Meaning:** Google account was successfully linked to Nearby account.
+ 
+* **Error Response**
+
+  * **Code:** 400 BAD REQUEST
+  * **Content:** `{"error" : "Bad Request"}`
+  * **Meaning:** Validation error.
+
+  OR
+
+  * **Code:** 401 Unauthorized
+  * **Content:** `{"error" : "Unauthorized"}`
+  * **Meaning:** Couldn't authenticate the Google ID with Google token.
+
+  OR
+
+  * **Code:** 403 FORBIDDEN
+  * **Content:** `{"error" : "Forbidden"}`
+  * **Meaning:** That Google account already exists in Nearby system OR that Nearby account is already linked to a Google account. It can't be linked.
 
 ## Requirements
 * Python 2.7
