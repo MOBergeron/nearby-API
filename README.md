@@ -79,7 +79,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook OR Google OR Guest`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
@@ -155,7 +155,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook OR Google OR Guest`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
@@ -230,7 +230,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
@@ -311,7 +311,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
@@ -387,7 +387,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
@@ -433,7 +433,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
@@ -485,7 +485,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Google`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
@@ -541,7 +541,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
