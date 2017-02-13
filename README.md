@@ -92,7 +92,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 ```json
   {
     "result": {
-        "anonimity": true,
+        "anonymity": true,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -168,7 +168,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 ```json
 {
     "result": [{
-        "anonimity": true,
+        "anonymity": true,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -183,7 +183,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
         "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
         "message": "Lorem Ipsum1"
     }, {
-        "anonimity": false,
+        "anonymity": false,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -243,7 +243,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 ```json
 {
     "result": [{
-        "anonimity": true,
+        "anonymity": true,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -258,7 +258,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
         "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
         "message": "Lorem Ipsum1"
     }, {
-        "anonimity": false,
+        "anonymity": false,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -324,7 +324,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 ```json
 {
     "result": [{
-        "anonimity": true,
+        "anonymity": true,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -339,7 +339,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
         "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
         "message": "Lorem Ipsum1"
     }, {
-        "anonimity": false,
+        "anonymity": false,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -439,7 +439,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
    **Required:**
    
-   `anonimity=[boolean]`
+   `anonymity=[boolean]`
    
    `longitude=[float]`
    

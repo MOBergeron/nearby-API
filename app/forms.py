@@ -30,14 +30,14 @@ def validateBoolean(form, field):
 	elif field.data.lower() == "false":
 		field.data = False
 	else:
-		raise ValidationError("Anonimity must be true or false.")
+		raise ValidationError("Anonymity must be true or false.")
 
 class ContactForm(FlaskForm):
 	email = StringField('Email', validators=[DataRequired(), Email()])
 	message = TextAreaField('Message', validators=[DataRequired(), Length(max=MAXIMUM_CONTACT_MESSAGE_LENGTH), escapeSpecialCharacters])
 
 class CreateSpottedForm(FlaskForm):
-	anonimity = StringField('anonimity', validators=[DataRequired(), validateBoolean])
+	anonymity = StringField('anonymity', validators=[DataRequired(), validateBoolean])
 	longitude = DecimalField('longitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LONGITUDE, max=MAXIMUM_LONGITUDE)])
 	latitude = DecimalField('latitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LATITUDE, max=MAXIMUM_LATITUDE)])
 	message = TextAreaField('message', validators=[DataRequired(), Length(max=MAXIMUM_SPOTTED_MESSAGE_LENGTH), escapeSpecialCharacters])

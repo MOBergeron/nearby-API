@@ -15,7 +15,7 @@ from oauth2client import client, crypt
 class SpottedModel(object):
 
 	@staticmethod
-	def createSpotted(userId, anonimity, latitude, longitude, message, picture=None):
+	def createSpotted(userId, anonymity, latitude, longitude, message, picture=None):
 		"""Creates a spotted.
 		"""
 		if not picture is None:
@@ -39,7 +39,7 @@ class SpottedModel(object):
 						Decimal(longitude)
 					]
 				},
-				'anonimity': anonimity,
+				'anonymity': anonymity,
 				'isArchived': False,
 				# Add save date
 				# Add picture link here
@@ -142,7 +142,7 @@ class SpottedModel(object):
 			response = DynamoDBConnection().getSpottedTable().query(
 				IndexName='SpottedByUserId',
 				KeyConditionExpression="userId = :k1",
-				FilterExpression="anonimity = :f1",
+				FilterExpression="anonymity = :f1",
 				ExpressionAttributeValues={
 					":k1" : userId,
 					":f1" : False
