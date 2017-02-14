@@ -9,8 +9,9 @@ from app.forms import ContactForm, CreateSpottedForm, GetSpottedsForm, MergeFace
 from app.models import SpottedModel, UserModel, FacebookModel, GoogleModel
 from app.utils import DecimalEncoder, validateUuid
 
-from flask import g, abort, request
-from flask_cors import cross_origin
+from flask import g, abort, request, Response
+
+ALLOW_CROSS_ORIGIN_FROM = ["https://nearbyapp.github.io"]
 
 # Decorators
 def requireAuthenticate(acceptGuest):
@@ -40,29 +41,39 @@ def requireAuthenticate(acceptGuest):
 		return decorated_function
 	return requireAuth
 
+def allowCrossOrigin(f):
+	@wraps(f)
+	def decorated_function(*args, **kwargs):
+		if 'Origin' in request.headers and request.headers['Origin'] in ALLOW_CROSS_ORIGIN_FROM:
+			res = f(*args, **kwargs)
+			res.headers['Access-Control-Allow-Origin'] = request.headers['Origin']
+			return res
+		return abort(403)
+	return decorated_function
+
 @app.errorhandler(400)
 def badRequest(e):
-	return json.dumps({'error':'Bad Request'}), 400
+	return Response(json.dumps({'error':'Bad Request'}), status_code=400)
 
 @app.errorhandler(401)
 def unauthorized(e):
-	return json.dumps({'error':'Unauthorized'}), 401
+	return Response(json.dumps({'error':'Unauthorized'}), status_code=401)
 
 @app.errorhandler(403)
 def forbidden(e):
-	return json.dumps({'error':'Forbidden'}), 403
+	return Response(json.dumps({'error':'Forbidden'}), status_code=403)
 
 @app.errorhandler(404)
 def notFound(e):
-	return json.dumps({'error':'Not Found'}), 404
+	return Response(json.dumps({'error':'Not Found'}), status_code=404)
 
 @app.errorhandler(405)
 def methodNotAllowed(e):
-	return json.dumps({'error':'Method Not Allowed'}), 405
+	return Response(json.dumps({'error':'Method Not Allowed'}), status_code=405)
 
 @app.errorhandler(500)
 def internalServerError(e):
-	return json.dumps({'error':'Internal Server Error'}), 500
+	return Response(json.dumps({'error':'Internal Server Error'}), status_code=500)
 
 @app.route("/v1/login", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
@@ -206,12 +217,12 @@ def createSpotted():
 		if user:
 			res = SpottedModel.createSpotted(userId=user['userId'], anonymity=anonymity, latitude=latitude, longitude=longitude, message=message, picture=None)
 			if res:
-				return json.dumps({'result': res}), 201
+				return Response(json.dumps({'result': res}), status_code=201)
 	
 	return abort(400)
 
 @app.route("/v1/spotted/<spottedId>", methods=['GET'])
-@cross_origin()
+@allowCrossOrigin
 @requireAuthenticate(acceptGuest=True)
 def spotted(spottedId):
 	# Returns a specific spotted
@@ -219,14 +230,15 @@ def spotted(spottedId):
 		if validateUuid(spottedId):
 			res = SpottedModel.getSpottedBySpottedId(spottedId)
 			if res:
-				return json.dumps({'result': res}, cls=DecimalEncoder)
+				response = Response(json.dumps(res, cls=DecimalEncoder))
+				return response
 			else:
 				return abort(404)
 
 	return abort(400)
 
 @app.route("/v1/spotteds", methods=['GET'])
-@cross_origin()
+@allowCrossOrigin
 @requireAuthenticate(acceptGuest=True)
 def spotteds():
 	form = GetSpottedsForm(request.args)
@@ -242,8 +254,9 @@ def spotteds():
 		# If locationOnly is True, returns only the locations for all the spotteds.
 		# Else, returns all spotteds with their whole data.
 		res = SpottedModel.getSpotteds(minLat=minLat, maxLat=maxLat, minLong=minLong, maxLong=maxLong, locationOnly=locationOnly)
-		if res:
-			return json.dumps({'result': res}, cls=DecimalEncoder)
+		if type(res) == list:
+			response = Response(json.dumps(res, cls=DecimalEncoder))
+			return response
 
 	return abort(400)
 
@@ -265,7 +278,7 @@ def spottedsByUserId(userId):
 			res = SpottedModel.getSpottedsByUserId(userId)
 
 		if type(res) == list:
-			return json.dumps({'result': res}, cls=DecimalEncoder)
+			return Response(json.dumps(res, cls=DecimalEncoder))
 
 	return abort(400)
 
