@@ -3,7 +3,7 @@ import json
 
 from functools import wraps
 
-from app import app
+from app import app, mongo
 
 from app.forms import ContactForm, CreateSpottedForm, GetSpottedsForm, MergeFacebookForm, MergeGoogleForm, LinkFacebookForm, LinkGoogleForm
 from app.models import SpottedModel, UserModel, FacebookModel, GoogleModel
@@ -74,6 +74,13 @@ def methodNotAllowed(e):
 @app.errorhandler(500)
 def internalServerError(e):
 	return Response(json.dumps({'error':'Internal Server Error'}), status=500, mimetype="application/json")
+
+@app.route("/test")
+def test():
+	output = []
+	for s in mongo.db.users.find():
+		output.append(s)
+	return json.dumps(output)
 
 @app.route("/v1/login", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)

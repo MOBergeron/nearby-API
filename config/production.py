@@ -4,5 +4,3 @@ ENVIRONMENT = "production"
 DEBUG = False
 
 HOST = "0.0.0.0"
-# TODO: Change the port to 443 when we'll be using SSL.
-PORT = 80
