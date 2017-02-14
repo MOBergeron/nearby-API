@@ -192,7 +192,7 @@ def createSpotted():
 	
 	# Creates a spotted according to form data
 	if form.validate_on_submit():
-		anonimity = form.anonimity.data
+		anonymity = form.anonymity.data
 		longitude = form.longitude.data
 		latitude = form.latitude.data
 		message = form.message.data
@@ -204,7 +204,7 @@ def createSpotted():
 			user = GoogleModel.getUserByGoogleId(request.authorization.username)
 
 		if user:
-			res = SpottedModel.createSpotted(userId=user['userId'], anonimity=anonimity, latitude=latitude, longitude=longitude, message=message, picture=None)
+			res = SpottedModel.createSpotted(userId=user['userId'], anonymity=anonymity, latitude=latitude, longitude=longitude, message=message, picture=None)
 			if res:
 				return json.dumps({'result': res}), 201
 	

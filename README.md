@@ -79,7 +79,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook OR Google OR Guest`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
@@ -92,7 +92,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 ```json
   {
     "result": {
-        "anonimity": true,
+        "anonymity": true,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -155,7 +155,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook OR Google OR Guest`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
@@ -168,7 +168,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 ```json
 {
     "result": [{
-        "anonimity": true,
+        "anonymity": true,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -183,7 +183,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
         "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
         "message": "Lorem Ipsum1"
     }, {
-        "anonimity": false,
+        "anonymity": false,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -230,7 +230,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
@@ -243,7 +243,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 ```json
 {
     "result": [{
-        "anonimity": true,
+        "anonymity": true,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -258,7 +258,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
         "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
         "message": "Lorem Ipsum1"
     }, {
-        "anonimity": false,
+        "anonymity": false,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -311,7 +311,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
@@ -324,7 +324,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 ```json
 {
     "result": [{
-        "anonimity": true,
+        "anonymity": true,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -339,7 +339,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
         "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
         "message": "Lorem Ipsum1"
     }, {
-        "anonimity": false,
+        "anonymity": false,
         "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
         "geoJson": {
             "type": "Point",
@@ -387,7 +387,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
@@ -433,13 +433,13 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook OR Google`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
    **Required:**
    
-   `anonimity=[boolean]`
+   `anonymity=[boolean]`
    
    `longitude=[float]`
    
@@ -485,7 +485,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Google`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
@@ -541,7 +541,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
   `Service-Provider: Facebook`
   
-  `Authorization: Basic {Base64 of ID:token#}`
+  `Authorization: Basic {Base64 of ID:token}`
 
 * **Data Params**
 
