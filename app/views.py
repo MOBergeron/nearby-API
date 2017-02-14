@@ -238,7 +238,7 @@ def spotteds():
 
 		# If locationOnly is True, returns only the locations for all the spotteds.
 		# Else, returns all spotteds with their whole data.
-		res = SpottedModel.getSpotteds(latitude=latitude, longitude=longitude, radius=radius, locationOnly=locationOnly)
+		res = SpottedModel.getSpotteds(minLat=minLat, maxLat=maxLat, minLong=minLong, maxLong=maxLong, locationOnly=locationOnly)
 		if res:
 			return json.dumps({'result': res}, cls=DecimalEncoder)
 
