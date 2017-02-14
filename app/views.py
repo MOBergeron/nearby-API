@@ -53,27 +53,27 @@ def allowCrossOrigin(f):
 
 @app.errorhandler(400)
 def badRequest(e):
-	return Response(json.dumps({'error':'Bad Request'}), status_code=400)
+	return Response(json.dumps({'error':'Bad Request'}), status=400, mimetype="application/json")
 
 @app.errorhandler(401)
 def unauthorized(e):
-	return Response(json.dumps({'error':'Unauthorized'}), status_code=401)
+	return Response(json.dumps({'error':'Unauthorized'}), status=401, mimetype="application/json")
 
 @app.errorhandler(403)
 def forbidden(e):
-	return Response(json.dumps({'error':'Forbidden'}), status_code=403)
+	return Response(json.dumps({'error':'Forbidden'}), status=403, mimetype="application/json")
 
 @app.errorhandler(404)
 def notFound(e):
-	return Response(json.dumps({'error':'Not Found'}), status_code=404)
+	return Response(json.dumps({'error':'Not Found'}), status=404, mimetype="application/json")
 
 @app.errorhandler(405)
 def methodNotAllowed(e):
-	return Response(json.dumps({'error':'Method Not Allowed'}), status_code=405)
+	return Response(json.dumps({'error':'Method Not Allowed'}), status=405, mimetype="application/json")
 
 @app.errorhandler(500)
 def internalServerError(e):
-	return Response(json.dumps({'error':'Internal Server Error'}), status_code=500)
+	return Response(json.dumps({'error':'Internal Server Error'}), status=500, mimetype="application/json")
 
 @app.route("/v1/login", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
@@ -217,7 +217,7 @@ def createSpotted():
 		if user:
 			res = SpottedModel.createSpotted(userId=user['userId'], anonymity=anonymity, latitude=latitude, longitude=longitude, message=message, picture=None)
 			if res:
-				return Response(json.dumps({'result': res}), status_code=201)
+				return Response(json.dumps({'result': res}), status=201, mimetype="application/json")
 	
 	return abort(400)
 
