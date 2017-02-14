@@ -10,6 +10,7 @@ from app.models import SpottedModel, UserModel, FacebookModel, GoogleModel
 from app.utils import DecimalEncoder, validateUuid
 
 from flask import g, abort, request
+from flask_cors import cross_origin
 
 # Decorators
 def requireAuthenticate(acceptGuest):
@@ -210,6 +211,7 @@ def createSpotted():
 	return abort(400)
 
 @app.route("/v1/spotted/<spottedId>", methods=['GET'])
+@cross_origin()
 @requireAuthenticate(acceptGuest=True)
 def spotted(spottedId):
 	# Returns a specific spotted
@@ -224,6 +226,7 @@ def spotted(spottedId):
 	return abort(400)
 
 @app.route("/v1/spotteds", methods=['GET'])
+@cross_origin()
 @requireAuthenticate(acceptGuest=True)
 def spotteds():
 	form = GetSpottedsForm(request.args)
