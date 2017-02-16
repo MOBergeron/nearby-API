@@ -7,14 +7,11 @@ from wtforms import BooleanField, DecimalField, IntegerField, StringField, TextA
 from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional, ValidationError
 
 # Constants
-MINIMUM_LONGITUDE = -90
-MAXIMUM_LONGITUDE = 90
+MINIMUM_LONGITUDE = -180
+MAXIMUM_LONGITUDE = 180
 
 MINIMUM_LATITUDE = -90
 MAXIMUM_LATITUDE = 90
-
-MINIMUM_RADIUS = 1
-MAXIMUM_RADIUS = 100
 
 MAXIMUM_CONTACT_MESSAGE_LENGTH = 1000
 MAXIMUM_SPOTTED_MESSAGE_LENGTH = 5000
@@ -38,8 +35,8 @@ class ContactForm(FlaskForm):
 
 class CreateSpottedForm(FlaskForm):
 	anonymity = StringField('anonymity', validators=[DataRequired(), validateBoolean])
-	longitude = DecimalField('longitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LONGITUDE, max=MAXIMUM_LONGITUDE)])
 	latitude = DecimalField('latitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LATITUDE, max=MAXIMUM_LATITUDE)])
+	longitude = DecimalField('longitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LONGITUDE, max=MAXIMUM_LONGITUDE)])
 	message = TextAreaField('message', validators=[DataRequired(), Length(max=MAXIMUM_SPOTTED_MESSAGE_LENGTH), escapeSpecialCharacters])
 	
 	#picture = Field('picture', validators=[Optional()])

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-import json
+from json import JSONEncoder
 import math
-import decimal
+from decimal import Decimal
+from bson import ObjectId
 
 from geohash import encode_uint64
 from uuid import UUID
@@ -14,15 +15,12 @@ class Singleton(type):
 			cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
 		return cls._instances[cls]
 
-# http://docs.aws.amazon.com/amazondynamodb/latest/gettingstartedguide/GettingStarted.Python.03.html
-class DecimalEncoder(json.JSONEncoder):
+class ObjectIdEncoder(JSONEncoder):
 	def default(self, o):
-		if isinstance(o, decimal.Decimal):
-			if o % 1 > 0:
-				return float(o)
-			else:
-				return int(o)
-		return super(DecimalEncoder, self).default(o)
+		if isinstance(o, ObjectId):
+			return str(o)
+		else:
+			return o
 
 # https://gist.github.com/ShawnMilo/7777304
 def validateUuid(uuid):

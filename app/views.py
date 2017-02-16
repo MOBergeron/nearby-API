@@ -7,7 +7,7 @@ from app import app, mongo
 
 from app.forms import ContactForm, CreateSpottedForm, GetSpottedsForm, MergeFacebookForm, MergeGoogleForm, LinkFacebookForm, LinkGoogleForm
 from app.models import SpottedModel, UserModel, FacebookModel, GoogleModel
-from app.utils import DecimalEncoder, validateUuid
+from app.utils import ObjectIdEncoder, validateUuid
 
 from flask import g, abort, request, Response
 
@@ -44,11 +44,13 @@ def requireAuthenticate(acceptGuest):
 def allowCrossOrigin(f):
 	@wraps(f)
 	def decorated_function(*args, **kwargs):
-		if 'Origin' in request.headers and request.headers['Origin'] in ALLOW_CROSS_ORIGIN_FROM:
-			res = f(*args, **kwargs)
-			res.headers['Access-Control-Allow-Origin'] = request.headers['Origin']
-			return res
-		return abort(403)
+		if 'Origin' in request.headers:
+			if request.headers['Origin'] in ALLOW_CROSS_ORIGIN_FROM:
+				res = f(*args, **kwargs)
+				res.headers['Access-Control-Allow-Origin'] = request.headers['Origin']
+				return res
+			return abort(403)
+		return f(*args, **kwargs)
 	return decorated_function
 
 @app.errorhandler(400)
@@ -80,7 +82,7 @@ def test():
 	output = []
 	for s in mongo.db.users.find():
 		output.append(s)
-	return json.dumps(output)
+	return json.dumps(output, cls=ObjectIdEncoder)
 
 @app.route("/v1/login", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
@@ -167,7 +169,7 @@ def linkFacebook():
 			if not FacebookModel.doesFacebookIdExist(form.facebookId.data):
 				user = GoogleModel.getUserByGoogleId(request.authorization.username)
 				if user and user['facebookId'] == 'unset':
-					if FacebookModel.linkFacebookIdToUserId(user['userId'], form.facebookId.data):
+					if FacebookModel.linkFacebookIdToUserId(user['_id'], form.facebookId.data):
 						return json.dumps({'result':'OK'}), 200
 				else:
 					return abort(403)
@@ -192,7 +194,7 @@ def linkGoogle():
 			if not GoogleModel.doesGoogleIdExist(form.googleId.data):
 				user = FacebookModel.getUserByFacebookId(request.authorization.username)
 				if user and user['googleId'] == 'unset':
-					if GoogleModel.linkGoogleIdToUserId(user['userId'], form.googleId.data):
+					if GoogleModel.linkGoogleIdToUserId(user['_id'], form.googleId.data):
 						return json.dumps({'result':'OK'}), 200
 				else:
 					return abort(403)
@@ -222,9 +224,9 @@ def createSpotted():
 			user = GoogleModel.getUserByGoogleId(request.authorization.username)
 
 		if user:
-			res = SpottedModel.createSpotted(userId=user['userId'], anonymity=anonymity, latitude=latitude, longitude=longitude, message=message, picture=None)
+			res = SpottedModel.createSpotted(userId=user['_id'], anonymity=anonymity, latitude=latitude, longitude=longitude, message=message, picture=None)
 			if res:
-				return Response(json.dumps({'result': res}), status=201, mimetype="application/json")
+				return Response(json.dumps({'result': res}, cls=ObjectIdEncoder), status=201, mimetype="application/json")
 	
 	return abort(400)
 
@@ -237,7 +239,7 @@ def spotted(spottedId):
 		if validateUuid(spottedId):
 			res = SpottedModel.getSpottedBySpottedId(spottedId)
 			if res:
-				response = Response(json.dumps(res, cls=DecimalEncoder))
+				response = Response(json.dumps(res, cls=ObjectIdEncoder))
 				return response
 			else:
 				return abort(404)
@@ -262,7 +264,7 @@ def spotteds():
 		# Else, returns all spotteds with their whole data.
 		res = SpottedModel.getSpotteds(minLat=minLat, maxLat=maxLat, minLong=minLong, maxLong=maxLong, locationOnly=locationOnly)
 		if type(res) == list:
-			response = Response(json.dumps(res, cls=DecimalEncoder))
+			response = Response(json.dumps(res, cls=ObjectIdEncoder))
 			return response
 
 	return abort(400)
@@ -276,7 +278,7 @@ def spottedsByUserId(userId):
 		if userId == 'me':
 			user = FacebookModel.getUserByFacebookId(request.authorization.username)
 			if user:
-				userId = user['userId']
+				userId = user['_id']
 				res = SpottedModel.getMySpotteds(userId)
 		elif FacebookModel.validateUserIdAndFacebookIdLink(userId, request.authorization.username):
 			res = SpottedModel.getSpottedsByUserId(userId)
@@ -285,7 +287,7 @@ def spottedsByUserId(userId):
 			res = SpottedModel.getSpottedsByUserId(userId)
 
 		if type(res) == list:
-			return Response(json.dumps(res, cls=DecimalEncoder))
+			return Response(json.dumps(res, cls=ObjectIdEncoder))
 
 	return abort(400)
 

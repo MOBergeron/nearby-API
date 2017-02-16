@@ -3,11 +3,10 @@ import json
 import math
 import urllib2
 
-from decimal import Decimal
 from uuid import uuid4
+from bson import ObjectId
 
-from app.connection import DynamoDBConnection
-from app.utils import generateBoundaries, generateGeohash, generateHashKey, intLength
+from app import mongo
 
 from botocore.exceptions import ClientError
 from oauth2client import client, crypt
@@ -22,21 +21,14 @@ class SpottedModel(object):
 			# Save it to S3, then keep the picture link to save it in the table.
 			pass
 
-		spottedId = str(uuid4())
-		geohash = generateGeohash(latitude, longitude)
-
-		hashKey = generateHashKey(geohash, 6)
-		DynamoDBConnection().getSpottedTable().put_item(
-			Item={
-				'hashKey': hashKey,
-				'spottedId': spottedId,
+		return mongo.db.spotteds.insert_one(
+			{
 				'userId': userId,
-				'geohash': geohash,
-				'geoJson': {
+				'location': {
 					'type':'Point',
 					'coordinates': [
-						Decimal(latitude), 
-						Decimal(longitude)
+						float(latitude), 
+						float(longitude)
 					]
 				},
 				'anonymity': anonymity,
@@ -45,130 +37,71 @@ class SpottedModel(object):
 				# Add picture link here
 				'message': message
 			}
-		)
-
-		return spottedId
+		).inserted_id
 
 	@staticmethod
 	def getSpottedBySpottedId(spottedId):
 		"""Gets a spotted by spottedId.
 		"""
-		res = False
-
-		try:
-			response = DynamoDBConnection().getSpottedTable().query(
-				IndexName='SpottedBySpottedId',
-				KeyConditionExpression="spottedId = :k1",
-				ExpressionAttributeValues={
-					':k1' : spottedId
-				}
-			)
-		except ClientError as e:
-			pass
-		else:
-			if len(response['Items']) == 1:
-				res = response['Items'][0]
-
-		return res
+		return mongo.db.spotteds.find_one({'_id': ObjectId(spottedId)})
 
 	@staticmethod
 	def getSpotteds(minLat, minLong, maxLat, maxLong, locationOnly):
 		"""Gets a list of spotteds by using the latitude, longitude and radius.
 		locationOnly returns only get the location of the returned spotteds if true.
 		"""
-		res = False
-		geohashNW = generateGeohash(minLat, minLong)
-		geohashSW = generateGeohash(maxLat,minLong)
-		geohashNE = generateGeohash(minLat,maxLong)
-		geohashSE = generateGeohash(maxLat, maxLong)
-
-		geohash = 0
-
-		for i in range(1,20):
-			if int(geohashNW/math.pow(10,i)) == int(geohashSW/math.pow(10,i)) \
-				and int(geohashNW/math.pow(10,i)) == int(geohashNE/math.pow(10,i)) \
-				and int(geohashNW/math.pow(10,i)) == int(geohashSE/math.pow(10,i)):
-				geohash = int(geohashNW/math.pow(10,i))
-				break
-
-		lower, higher = generateBoundaries(geohash, intLength(geohashNW))
-		hashKey = generateHashKey(geohash, 6)
-
-		try:
-			response = DynamoDBConnection().getSpottedTable().query(
-				IndexName='SpottedByGeohash',
-				KeyConditionExpression="hashKey = :k1 AND geohash BETWEEN :k2 AND :k3",
-				ExpressionAttributeValues={
-					':k1' : hashKey,
-					':k2' : lower,
-					':k3' : higher
+		return [x for x in mongo.db.spotteds.find(
+				{
+					'location': {
+						'$geoWithin': {
+							'$geometry': {
+								'type': 'Polygon',
+								'coordinates': [
+									[
+										[float(minLat), float(minLong)],
+										[float(minLat), float(maxLong)],
+										[float(maxLat), float(maxLong)],
+										[float(maxLat), float(minLong)],
+										[float(minLat), float(minLong)]
+									]
+								]
+							}
+						}
+					}
 				}
 			)
-		except ClientError as e:
-			print(e)
-		else:
-			res = response['Items']
-
-		return res
+		]
 
 	@staticmethod
 	def getMySpotteds(userId):
 		"""Gets a list of spotteds by using the userId of a specific user.
 		"""
-		res = False
-
-		try:
-			response = DynamoDBConnection().getSpottedTable().query(
-				IndexName='SpottedByUserId',
-				KeyConditionExpression="userId = :k1",
-				ExpressionAttributeValues={
-					':k1' : userId
-				}
-			)
-		except ClientError as e:
-			print(e)
-		else:
-			res = response['Items']
-
-		return res
+		return [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId)})]
 
 	@staticmethod
-	def getSpottedsByUserId(userId):
+	def getSpottedsByUserId(userId, anonymity=False):
 		"""Gets a list of spotteds by using the userId of a specific user.
 		"""
-		res = False
-
-		try:
-			response = DynamoDBConnection().getSpottedTable().query(
-				IndexName='SpottedByUserId',
-				KeyConditionExpression="userId = :k1",
-				FilterExpression="anonymity = :f1",
-				ExpressionAttributeValues={
-					":k1" : userId,
-					":f1" : False
-				}
-			)
-		except ClientError as e:
-			print(e)
+		res = []
+		if anonymity is None:
+			res = [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId)})]
 		else:
-			res = response['Items']
-
+			res = [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId), 'anonymity': anonymity})]
 		return res
 
 class UserModel(object):
 
 	@staticmethod
-	def createUser(facebookToken='unset', googleToken='unset'):
+	def createUser(facebookToken=None, googleToken=None):
 		"""THIS METHOD SHOULDN'T BE USED ELSEWHERE THAN IN FacebookModel AND GoogleModel.
 		Creates a user with either facebookToken or googleToken.
 		"""
-		userId = str(uuid4())
-		facebookId = 'unset'
-		googleId = 'unset'
-		fullName = 'unset'
-		profilPictureURL = 'unset'
+		facebookId = None
+		googleId = None
+		fullName = None
+		profilPictureURL = None
 
-		if not facebookToken == 'unset':
+		if not facebookToken == None:
 			facebookId = facebookToken['user_id']
 			url = "https://graph.facebook.com/{facebookId}?fields=name,picture&access_token={accessToken}"
 			res = urllib2.urlopen(url.format(facebookId=facebookId,accessToken=facebookToken['token']))
@@ -176,48 +109,33 @@ class UserModel(object):
 			profilPictureURL = data['picture']['data']['url']
 			fullName = data['name']
 		
-		if not googleToken == 'unset':
+		if not googleToken == None:
 			googleId = googleToken['sub']
 			profilPictureURL = googleToken['picture']
 			fullName = googleToken['name']
 
-		DynamoDBConnection().getUserTable().put_item(
-			Item={
-				'userId': userId,
-				'facebookId': facebookId,
-				'googleId': googleId,
-				'fullName': fullName,
-				'profilPictureURL': profilPictureURL,
-				'disabled': False
-			}
-		)
+		userId = False
+
+		if facebookId or googleId:
+			userId = mongo.db.users.insert_one(
+				{
+					'facebookId': facebookId,
+					'googleId': googleId,
+					'fullName': fullName,
+					'profilPictureURL': profilPictureURL,
+					'disabled': False
+				}
+			).inserted_id
 
 		return userId
 
 	@staticmethod
 	def disableUser(userId):
-
-		DynamoDBConnection().getUserTable().delete_item(
-			Key={
-				'userId': userId
-			},
-			UpdateExpression="set disabled = :k1",
-			ExpressionAttributeValues={
-				':k1': True
-			},
-			ReturnValues='None'
-		)
-
-		DynamoDBConnection().getSpottedTable().update_item(
-			Key={
-				'userId': userId
-			},
-			UpdateExpression="set isArchived = :k1",
-			ExpressionAttributeValues={
-				':k1': True
-			},
-			ReturnValues='None'
-		)
+		res = False
+		if mongo.db.users.update_one({'_id': userId}, {'disabled': True}).modified_coun == 1:
+			mongo.db.spotteds.update_many({'userId': userId}, {'isArchived': True})
+			res = True
+		return res
 
 
 	@staticmethod
@@ -230,43 +148,23 @@ class UserModel(object):
 	def getUser(userId):
 		"""Gets a user by userId.
 		"""
-		res = None
-
-		try:
-			response = DynamoDBConnection().getUserTable().get_item(
-				Key={
-					'userId': userId
-				}
-			)
-		except ClientError as e:
-			pass
-		else:
-			if 'Item' in response:
-				res = response['Item']
-
-		return res
+		return mongo.db.users.find_one({'_id': ObjectId(userId)})
 
 	@staticmethod
 	def mergeUsers(userIdFrom, userIdTo):
 		res = False
-		if UserModel.doesUserExist(userIdFrom) and UserModel.doesUserExist(userIdTo):
-			DynamoDBConnection().getSpottedTable().update_item(
-				Key={
-					'userId': userIdFrom
-				},
-				UpdateExpression="set userId = :k1",
-				ExpressionAttributeValues={
-					':k1': userIdTo
-				},
-				ReturnValues='None'
-			)
+		userTo = UserModel.getUser(userIdFrom)
+		userFrom = UserModel.getUser(userIdTo)
 
-			DynamoDBConnection().getUserTable().delete_item(
-				Key={
-					'userId': userIdFrom
-				},
-				ReturnValues='None'
-			)
+		if userTo and userFrom \
+		and (not userTo['facebookId'] and userFrom['facebookId'] and not userFrom['googleId'] \
+		or not userTo['googleId'] and userFrom['googleId'] and not userFrom['facebookId']):
+			mongo.db.spotteds.update_many({'userId': userIdTo}, {'userId': userIdFrom})
+			if not userTo['facebookId'] and userFrom['facebookId']:
+				mongo.db.users.update_one({'_id': userIdFrom}, {'facebookId': userFrom['facebookId']})
+
+			elif not userTo['googleId'] and userFrom['googleId']:
+				mongo.db.users.update_one({'_id': userIdFrom}, {'googleId': userFrom['googleId']})
 			res = True
 
 		return res
@@ -296,23 +194,7 @@ class FacebookModel(UserModel):
 	def getUserByFacebookId(facebookId):
 		"""Gets a user by facebookId.
 		"""
-		res = False
-
-		try:
-			response = DynamoDBConnection().getUserTable().query(
-				IndexName='facebookIdIndex',
-				KeyConditionExpression="facebookId = :k1",
-				ExpressionAttributeValues={
-					':k1': facebookId
-				}
-			)
-		except ClientError as e:
-			pass
-		else:
-			if len(response['Items']) == 1:
-				res = response['Items'][0]
-
-		return res
+		return mongo.db.users.find_one({'facebookId': facebookId})
 
 	@staticmethod
 	def doesFacebookIdExist(facebookId):
@@ -327,31 +209,10 @@ class FacebookModel(UserModel):
 		res = False
 		if not FacebookModel.doesFacebookIdExist(facebookId):
 			user = UserModel.getUser(userId)
-			if user and FacebookModel.validateUserIdAndFacebookIdLink(facebookId, 'unset'):
-				DynamoDBConnection().getUserTable().delete_item(
-					Key={
-						'userId': userId
-					}
-				)
+			if user and FacebookModel.validateUserIdAndFacebookIdLink(userId, None):
+				res = mongo.db.users.update_one({'_id': userId}, {'facebookId': facebookId}).modified_count == 1
 
-				res = UserModel.createUser(facebookId=facebookId, googleId=user['googleId'])
-		
 		return res
-
-	@staticmethod
-	def unregisterFacebookIdFromUserId(userId):
-		"""Unregister a Facebook account from a user.
-		"""
-		DynamoDBConnection().getUserTable().update_item(
-			Key={
-				'userId': userId
-			},
-			UpdateExpression="set facebookId = :facebookId",
-			ExpressionAttributeValues={
-				':facebookId': 'unset'
-			},
-			ReturnValues='None'
-		)
 
 	@staticmethod
 	def validateUserIdAndFacebookIdLink(userId, facebookId):
@@ -395,23 +256,7 @@ class GoogleModel(UserModel):
 	def getUserByGoogleId(googleId):
 		"""Gets a user by googleId.
 		"""
-		res = False
-
-		try:
-			response = DynamoDBConnection().getUserTable().query(
-				IndexName='googleIdIndex',
-				KeyConditionExpression="googleId = :k1",
-				ExpressionAttributeValues={
-					':k1': googleId
-				}
-			)
-		except ClientError as e:
-			print(e)
-		else:
-			if len(response['Items']) == 1:
-				res = response['Items'][0]
-
-		return res
+		return mongo.db.users.find_one({'googleId': googleId})
 
 	@staticmethod
 	def doesGoogleIdExist(googleId):
@@ -426,31 +271,10 @@ class GoogleModel(UserModel):
 		res = False
 		if not GoogleModel.doesGoogleIdExist(googleId):
 			user = UserModel.getUser(userId)
-			if user and GoogleModel.validateUserIdAndGoogleIdLink(userId, 'unset'):
-				DynamoDBConnection().getUserTable().delete_item(
-					Key={
-						'userId': userId
-					}
-				)
-
-				res = UserModel.createUser(facebookId=user['facebookId'], googleId=googleId)
+			if user and GoogleModel.validateUserIdAndGoogleIdLink(userId, None):
+				res = mongo.db.users.update_one({'_id': userId}, {'googleId': googleId}).modified_count == 1
 		
 		return res
-
-	@staticmethod
-	def unregisterGoogleIdFromUserId(userId):
-		"""Unregister a Google account from a user.
-		"""
-		DynamoDBConnection().getUserTable().update_item(
-			Key={
-				'userId': userId
-			},
-			UpdateExpression="set googleId = :googleId",
-			ExpressionAttributeValues={
-				':googleId': 'unset'
-			},
-			ReturnValues='None'
-		)
 
 	@staticmethod
 	def validateUserIdAndGoogleIdLink(userId, googleId):
