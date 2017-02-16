@@ -7,7 +7,7 @@ from app import app, mongo
 
 from app.forms import ContactForm, CreateSpottedForm, GetSpottedsForm, MergeFacebookForm, MergeGoogleForm, LinkFacebookForm, LinkGoogleForm
 from app.models import SpottedModel, UserModel, FacebookModel, GoogleModel
-from app.utils import ObjectIdEncoder, validateUuid
+from app.utils import ObjectIdEncoder, validateObjectId
 
 from flask import g, abort, request, Response
 
@@ -236,7 +236,7 @@ def createSpotted():
 def spotted(spottedId):
 	# Returns a specific spotted
 	if spottedId:
-		if validateUuid(spottedId):
+		if validateObjectId(spottedId):
 			res = SpottedModel.getSpottedBySpottedId(spottedId)
 			if res:
 				response = Response(json.dumps(res, cls=ObjectIdEncoder))
@@ -273,7 +273,7 @@ def spotteds():
 @requireAuthenticate(acceptGuest=False)
 def spottedsByUserId(userId):
 	# Returns all spotteds to a specific userId
-	if userId and (validateUuid(userId) or userId == 'me'):
+	if userId and (validateObjectId(userId) or userId == 'me'):
 		res = False
 		if userId == 'me':
 			user = FacebookModel.getUserByFacebookId(request.authorization.username)
