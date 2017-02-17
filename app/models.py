@@ -79,6 +79,7 @@ class SpottedModel(object):
 						}
 					}
 				},
+				limit=200,
 				projection=projection
 			)
 		]
@@ -87,13 +88,13 @@ class SpottedModel(object):
 	def getMySpotteds(userId):
 		"""Gets a list of spotteds by using the userId of a specific user.
 		"""
-		return [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId)}, projection={'archived': False})]
+		return [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId)}, limit=20, projection={'archived': False})]
 
 	@staticmethod
 	def getSpottedsByUserId(userId):
 		"""Gets a list of spotteds by using the userId of a specific user.
 		"""
-		res = [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId), 'anonymity': False, 'archived': False}, projection={'archived': False})]
+		res = [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId), 'anonymity': False, 'archived': False}, limit=20, projection={'archived': False})]
 		return res
 
 class UserModel(object):

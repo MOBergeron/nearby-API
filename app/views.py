@@ -276,14 +276,17 @@ def spottedsByUserId(userId):
 	if userId and (validateObjectId(userId) or userId == 'me'):
 		res = False
 		if userId == 'me':
-			user = FacebookModel.getUserByFacebookId(request.authorization.username)
+			if g.loginWith == 'Facebook':
+				user = FacebookModel.getUserByFacebookId(request.authorization.username)
+			elif g.loginWith == 'Google':
+				user = GoogleModel.getUserByGoogleId(request.authorization.username)
 			if user:
 				userId = user['_id']
 				res = SpottedModel.getMySpotteds(userId)
 		elif FacebookModel.validateUserIdAndFacebookIdLink(userId, request.authorization.username):
 			res = SpottedModel.getMySpotteds(userId)
 		else:
-			res = SpottedModel.getSpottedsByUserId(userId, False)
+			res = SpottedModel.getSpottedsByUserId(userId)
 
 		if type(res) == list:
 			return Response(json.dumps(res, cls=CustomJSONEncoder))
