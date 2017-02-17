@@ -103,15 +103,35 @@ def loginFacebook():
 		
 	return abort(400)
 
-#@app.route("/v1/disable/facebook", methods=['POST'])
+@app.route("/v1/disable", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
-def disableFacebook():
-	pass
+def disableAccount():
+	user = None
+	if g.loginWith == 'Facebook':
+		user = FacebookModel.getUserByFacebookId(request.authorization.username)
+	elif g.loginWith == 'Google':
+		user = GoogleModel.getUserByGoogleId(request.authorization.username)
+	
+	if user:
+		if UserModel.disableUser(user['_id']):
+			return json.dumps({'result':'OK'}), 200
 
-#@app.route("/v1/disable/google", methods=['POST'])
+	return abort(400)
+
+@app.route("/v1/enable", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
-def disableGoogle():
-	pass
+def enableAccount():
+	user = None
+	if g.loginWith == 'Facebook':
+		user = FacebookModel.getUserByFacebookId(request.authorization.username)
+	elif g.loginWith == 'Google':
+		user = GoogleModel.getUserByGoogleId(request.authorization.username)
+	
+	if user:
+		if UserModel.enableUser(user['_id']):
+			return json.dumps({'result':'OK'}), 200
+
+	return abort(400)
 
 #@app.route("/v1/merge/facebook", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
@@ -128,7 +148,7 @@ def mergeFacebook():
 				googleUser = GoogleModel.getUserByGoogleId(request.authorization.username)
 				facebookUser = FacebookModel.getUserByFacebookId(form.facebookId.data)
 
-				if googleUser and googleUser['facebookId'] == 'unset':
+				if googleUser and googleUser['facebookId'] == None:
 					if UserModel.mergeUsers(facebookUser['userId'], googleUser['userId']):
 						return json.dumps({'result':'OK'}), 200
 
@@ -149,7 +169,7 @@ def mergeGoogle():
 				facebookUser = FacebookModel.getUserByFacebookId(request.authorization.username)
 				googleUser = GoogleModel.getUserByGoogleId(form.googleId.data)
 
-				if facebookUser and facebookUser['googleId'] == 'unset':
+				if facebookUser and facebookUser['googleId'] == None:
 					if UserModel.mergeUsers(googleUser['userId'], facebookUser['userId']):
 						return json.dumps({'result':'OK'}), 200
 
@@ -168,7 +188,7 @@ def linkFacebook():
 			# Continue only if the account doesn't exist yet.
 			if not FacebookModel.doesFacebookIdExist(form.facebookId.data):
 				user = GoogleModel.getUserByGoogleId(request.authorization.username)
-				if user and user['facebookId'] == 'unset':
+				if user and user['facebookId'] == None:
 					if FacebookModel.linkFacebookIdToUserId(user['_id'], form.facebookId.data):
 						return json.dumps({'result':'OK'}), 200
 				else:
@@ -193,7 +213,7 @@ def linkGoogle():
 			# Continue only if the account doesn't exist yet.
 			if not GoogleModel.doesGoogleIdExist(form.googleId.data):
 				user = FacebookModel.getUserByFacebookId(request.authorization.username)
-				if user and user['googleId'] == 'unset':
+				if user and user['googleId'] == None:
 					if GoogleModel.linkGoogleIdToUserId(user['_id'], form.googleId.data):
 						return json.dumps({'result':'OK'}), 200
 				else:

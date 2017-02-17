@@ -18,6 +18,9 @@ class SpottedModel(object):
 			# Save it to S3, then keep the picture link to save it in the table.
 			pass
 
+		if not isinstance(userId, ObjectId):
+			userId = ObjectId(userId)
+
 		return mongo.db.spotteds.insert_one(
 			{
 				'userId': userId,
@@ -40,7 +43,10 @@ class SpottedModel(object):
 	def getSpottedBySpottedId(spottedId):
 		"""Gets a spotted by spottedId.
 		"""
-		return mongo.db.spotteds.find_one({'_id': ObjectId(spottedId), 'archived': False}, projection={'archived': False})
+		if isinstance(spottedId, ObjectId):
+			spottedId = ObjectId(spottedId)
+		
+		return mongo.db.spotteds.find_one({'_id': spottedId, 'archived': False}, projection={'archived': False})
 
 	@staticmethod
 	def getSpotteds(minLat, minLong, maxLat, maxLong, locationOnly):
@@ -88,13 +94,19 @@ class SpottedModel(object):
 	def getMySpotteds(userId):
 		"""Gets a list of spotteds by using the userId of a specific user.
 		"""
-		return [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId)}, limit=20, projection={'archived': False})]
+		if isinstance(userId, ObjectId):
+			userId = ObjectId(userId)
+		
+		return [x for x in mongo.db.spotteds.find({'userId': userId}, limit=20, projection={'archived': False})]
 
 	@staticmethod
 	def getSpottedsByUserId(userId):
 		"""Gets a list of spotteds by using the userId of a specific user.
 		"""
-		res = [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId), 'anonymity': False, 'archived': False}, limit=20, projection={'archived': False})]
+		if isinstance(userId, ObjectId):
+			userId = ObjectId(userId)
+		
+		res = [x for x in mongo.db.spotteds.find({'userId': userId, 'anonymity': False, 'archived': False}, limit=20, projection={'archived': False})]
 		return res
 
 class UserModel(object):
@@ -147,35 +159,58 @@ class UserModel(object):
 	@staticmethod
 	def disableUser(userId):
 		res = False
-		if mongo.db.users.update_one({'_id': userId}, {'disabled': True}).modified_count == 1:
-			mongo.db.spotteds.update_many({'userId': userId}, {'archived': True})
-			res = True
+		if isinstance(userId, ObjectId):
+			userId = ObjectId(userId)
+
+		if mongo.db.users.update_one({'_id': userId}, {'$set': {'disabled': True}}).modified_count == 1:
+			if mongo.db.spotteds.count({'userId': userId}) == mongo.db.spotteds.update_many({'userId': userId}, {'$set': {'archived': True}}).modified_count:
+				res = True
+			else:
+				# Reverte
+				mongo.db.users.update_one({'_id': userId}, {'$set': {'disabled': False}})
+				mongo.db.spotteds.update_many({'userId': userId}, {'$set': {'archived': False}})
 		return res
 
 	@staticmethod
 	def doesUserExist(userId):
 		"""Checks if a user exists by userId.
 		"""
+		if isinstance(userId, ObjectId):
+			userId = ObjectId(userId)
+
 		return True if UserModel.getUser(userId) else False
 
 	@staticmethod
 	def enableUser(userId):
 		res = False
-		if mongo.db.users.update_one({'_id': userId}, {'disabled': False}).modified_count == 1:
-			mongo.db.spotteds.update_many({'userId': userId}, {'archived': False})
-			res = True
+		if isinstance(userId, ObjectId):
+			userId = ObjectId(userId)
+
+		if mongo.db.users.update_one({'_id': userId}, {'$set': {'disabled': False}}).modified_count == 1:
+			if mongo.db.spotteds.count({'userId': userId}) == mongo.db.spotteds.update_many({'userId': userId}, {'$set': {'archived': False}}).modified_count:
+				res = True
+			else:
+				# Reverte
+				mongo.db.users.update_one({'_id': userId}, {'$set': {'disabled': True}})
+				mongo.db.spotteds.update_many({'userId': userId}, {'$set': {'archived': True}})
 		return res
 
 	@staticmethod
 	def getUser(userId):
 		"""Gets a user by userId.
 		"""
-		return mongo.db.users.find_one({'_id': ObjectId(userId)})
+		if isinstance(userId, ObjectId):
+			userId = ObjectId(userId)
+		
+		return mongo.db.users.find_one({'_id': userId})
 
 	@staticmethod
 	def isDisabled(userId):
 		res = True
-		user = mongo.db.users.find_one({'_id': ObjectId(userId)})
+		if isinstance(userId, ObjectId):
+			userId = ObjectId(userId)
+		
+		user = mongo.db.users.find_one({'_id': userId})
 		if user and not user.disabled:
 			res = False
 
@@ -184,6 +219,12 @@ class UserModel(object):
 	@staticmethod
 	def mergeUsers(userIdNew, userIdOld):
 		res = False
+		if isinstance(userIdNew, ObjectId):
+			userIdNew = ObjectId(userIdNew)
+
+		if isinstance(userIdOld, ObjectId):
+			userIdOld = ObjectId(userIdOld)
+
 		userOld = UserModel.getUser(userIdNew)
 		userNew = UserModel.getUser(userIdOld)
 
@@ -241,6 +282,9 @@ class FacebookModel(UserModel):
 		"""Register a Facebook account to a user.
 		"""
 		res = False
+		if isinstance(userId, ObjectId):
+			userId = ObjectId(userId)
+		
 		if not FacebookModel.doesFacebookIdExist(facebookId):
 			user = UserModel.getUser(userId)
 			if user and FacebookModel.validateUserIdAndFacebookIdLink(userId, None):
@@ -253,6 +297,9 @@ class FacebookModel(UserModel):
 		"""Validate the link between a user and a Facebook account.
 		"""
 		res = False
+		if isinstance(userId, ObjectId):
+			userId = ObjectId(userId)
+		
 		user = UserModel.getUser(userId)
 		if user and user['facebookId'] == facebookId:
 			res = True
@@ -303,6 +350,9 @@ class GoogleModel(UserModel):
 		"""Register a Google account to a user.
 		"""
 		res = False
+		if isinstance(userId, ObjectId):
+			userId = ObjectId(userId)
+		
 		if not GoogleModel.doesGoogleIdExist(googleId):
 			user = UserModel.getUser(userId)
 			if user and GoogleModel.validateUserIdAndGoogleIdLink(userId, None):
