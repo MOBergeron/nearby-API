@@ -1,19 +1,45 @@
 #!/usr/bin/env python
-import os
+from os import path
+from sys import exit
+from argparse import ArgumentParser
 
 from app import app
 
 if __name__=='__main__':
-	if os.path.exists(os.path.join(os.path.basename(__file__), "cert.pem")) and os.path.exists(os.path.join(os.path.basename(__file__), "privkey.pem")):
-		sslContext = ('cert.pem','privkey.pem')
-		print("Certificates found. SSL is enabled.")
+	parser = ArgumentParser(description="Nearby Flask server")
+
+	parser.add_argument('--host', dest='host', default=None)
+	parser.add_argument('--port', dest='port', default=None)
+	parser.add_argument('-s', '--ssl', action='store_true', dest='ssl', default=False)
+
+	args = parser.parse_args()
+	
+	if args.host:
+		host = args.host
+	else:
+		host = app.config['HOST']
+
+	if args.port:
+		port = args.port
+	else:
+		port = app.config['PORT']
+
+	if args.ssl:
+		if path.exists(path.join(path.dirname(__file__), "cert.pem")) and path.exists(path.join(path.dirname(__file__), "privkey.pem")):
+			sslContext = ('cert.pem','privkey.pem')
+			print("Certificates were found. SSL is enabled.")
+		else:
+			print("Certificates weren't found.")
+			exit(0)
 	else:
 		sslContext = None
 
 	# Start the app
 	app.run(debug=app.config['DEBUG'],
-		host=app.config['HOST'],
-		port=app.config['PORT'],
+		host=host,
+		port=port,
 		ssl_context=sslContext,
 		use_reloader=False,
 		threaded=True)
+
+

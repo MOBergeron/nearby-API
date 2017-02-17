@@ -7,7 +7,7 @@ from app import app, mongo
 
 from app.forms import ContactForm, CreateSpottedForm, GetSpottedsForm, MergeFacebookForm, MergeGoogleForm, LinkFacebookForm, LinkGoogleForm
 from app.models import SpottedModel, UserModel, FacebookModel, GoogleModel
-from app.utils import ObjectIdEncoder, validateObjectId
+from app.utils import CustomJSONEncoder, validateObjectId
 
 from flask import g, abort, request, Response
 
@@ -82,7 +82,7 @@ def test():
 	output = []
 	for s in mongo.db.users.find():
 		output.append(s)
-	return json.dumps(output, cls=ObjectIdEncoder)
+	return json.dumps(output, cls=CustomJSONEncoder)
 
 @app.route("/v1/login", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
@@ -226,7 +226,7 @@ def createSpotted():
 		if user:
 			res = SpottedModel.createSpotted(userId=user['_id'], anonymity=anonymity, latitude=latitude, longitude=longitude, message=message, picture=None)
 			if res:
-				return Response(json.dumps({'result': res}, cls=ObjectIdEncoder), status=201, mimetype="application/json")
+				return Response(json.dumps({'result': res}, cls=CustomJSONEncoder), status=201, mimetype="application/json")
 	
 	return abort(400)
 
@@ -239,7 +239,7 @@ def spotted(spottedId):
 		if validateObjectId(spottedId):
 			res = SpottedModel.getSpottedBySpottedId(spottedId)
 			if res:
-				response = Response(json.dumps(res, cls=ObjectIdEncoder))
+				response = Response(json.dumps(res, cls=CustomJSONEncoder))
 				return response
 			else:
 				return abort(404)
@@ -264,7 +264,7 @@ def spotteds():
 		# Else, returns all spotteds with their whole data.
 		res = SpottedModel.getSpotteds(minLat=minLat, maxLat=maxLat, minLong=minLong, maxLong=maxLong, locationOnly=locationOnly)
 		if type(res) == list:
-			response = Response(json.dumps(res, cls=ObjectIdEncoder))
+			response = Response(json.dumps(res, cls=CustomJSONEncoder))
 			return response
 
 	return abort(400)
@@ -286,7 +286,7 @@ def spottedsByUserId(userId):
 			res = SpottedModel.getSpottedsByUserId(userId, False)
 
 		if type(res) == list:
-			return Response(json.dumps(res, cls=ObjectIdEncoder))
+			return Response(json.dumps(res, cls=CustomJSONEncoder))
 
 	return abort(400)
 

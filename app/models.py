@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 import json
-import math
 import urllib2
+import datetime
 
-from uuid import uuid4
 from bson import ObjectId
+from oauth2client import client, crypt
 
 from app import mongo
-
-from botocore.exceptions import ClientError
-from oauth2client import client, crypt
 
 class SpottedModel(object):
 
@@ -24,6 +21,8 @@ class SpottedModel(object):
 		return mongo.db.spotteds.insert_one(
 			{
 				'userId': userId,
+				'anonymity': anonymity,
+				'archived': False,
 				'location': {
 					'type':'Point',
 					'coordinates': [
@@ -31,9 +30,7 @@ class SpottedModel(object):
 						float(longitude)
 					]
 				},
-				'anonymity': anonymity,
-				'isArchived': False,
-				# Add save date
+				'creationDate' : datetime.datetime.utcnow(),
 				# Add picture link here
 				'message': message
 			}
@@ -43,15 +40,28 @@ class SpottedModel(object):
 	def getSpottedBySpottedId(spottedId):
 		"""Gets a spotted by spottedId.
 		"""
-		return mongo.db.spotteds.find_one({'_id': ObjectId(spottedId)})
+		return mongo.db.spotteds.find_one({'_id': ObjectId(spottedId), 'archived': False}, projection={'archived': False})
 
 	@staticmethod
 	def getSpotteds(minLat, minLong, maxLat, maxLong, locationOnly):
 		"""Gets a list of spotteds by using the latitude, longitude and radius.
 		locationOnly returns only get the location of the returned spotteds if true.
 		"""
-		return [x for x in mongo.db.spotteds.find(
+		projection = {}
+		projection['_id'] = True
+		projection['location'] = True
+
+		if not locationOnly:
+			projection['anonymity'] = True
+			projection['archived'] = True
+			projection['creationDate'] = True
+			projection['message'] = True
+			projection['userId'] = True
+
+		return [spotted for spotted in mongo.db.spotteds.find(
 				{
+					'anonymity': False,
+					'archived': False,
 					'location': {
 						'$geoWithin': {
 							'$geometry': {
@@ -68,25 +78,22 @@ class SpottedModel(object):
 							}
 						}
 					}
-				}
+				},
+				projection=projection
 			)
 		]
-
+		
 	@staticmethod
 	def getMySpotteds(userId):
 		"""Gets a list of spotteds by using the userId of a specific user.
 		"""
-		return [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId)})]
+		return [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId)}, projection={'archived': False})]
 
 	@staticmethod
-	def getSpottedsByUserId(userId, anonymity=False):
+	def getSpottedsByUserId(userId):
 		"""Gets a list of spotteds by using the userId of a specific user.
 		"""
-		res = []
-		if anonymity is None:
-			res = [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId)})]
-		else:
-			res = [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId), 'anonymity': anonymity})]
+		res = [x for x in mongo.db.spotteds.find({'userId': ObjectId(userId), 'anonymity': False, 'archived': False}, projection={'archived': False})]
 		return res
 
 class UserModel(object):
@@ -98,6 +105,8 @@ class UserModel(object):
 		"""
 		facebookId = None
 		googleId = None
+		facebookDate = None
+		googleDate = None
 		fullName = None
 		profilPictureURL = None
 
@@ -108,11 +117,13 @@ class UserModel(object):
 			data = json.loads(res.read())
 			profilPictureURL = data['picture']['data']['url']
 			fullName = data['name']
+			facebookDate = datetime.datetime.utcnow()
 		
 		if not googleToken == None:
 			googleId = googleToken['sub']
 			profilPictureURL = googleToken['picture']
 			fullName = googleToken['name']
+			googleDate = datetime.datetime.utcnow()
 
 		userId = False
 
@@ -123,7 +134,10 @@ class UserModel(object):
 					'googleId': googleId,
 					'fullName': fullName,
 					'profilPictureURL': profilPictureURL,
-					'disabled': False
+					'disabled': False,
+					'creationDate' : datetime.datetime.utcnow(),
+					'facebookDate' : facebookDate,
+					'googleDate' : googleDate,
 				}
 			).inserted_id
 
@@ -132,11 +146,10 @@ class UserModel(object):
 	@staticmethod
 	def disableUser(userId):
 		res = False
-		if mongo.db.users.update_one({'_id': userId}, {'disabled': True}).modified_coun == 1:
-			mongo.db.spotteds.update_many({'userId': userId}, {'isArchived': True})
+		if mongo.db.users.update_one({'_id': userId}, {'disabled': True}).modified_count == 1:
+			mongo.db.spotteds.update_many({'userId': userId}, {'archived': True})
 			res = True
 		return res
-
 
 	@staticmethod
 	def doesUserExist(userId):
@@ -145,27 +158,47 @@ class UserModel(object):
 		return True if UserModel.getUser(userId) else False
 
 	@staticmethod
+	def enableUser(userId):
+		res = False
+		if mongo.db.users.update_one({'_id': userId}, {'disabled': False}).modified_count == 1:
+			mongo.db.spotteds.update_many({'userId': userId}, {'archived': False})
+			res = True
+		return res
+
+	@staticmethod
 	def getUser(userId):
 		"""Gets a user by userId.
 		"""
 		return mongo.db.users.find_one({'_id': ObjectId(userId)})
 
 	@staticmethod
-	def mergeUsers(userIdFrom, userIdTo):
+	def isDisabled(userId):
+		res = True
+		user = mongo.db.users.find_one({'_id': ObjectId(userId)})
+		if user and not user.disabled:
+			res = False
+
+		return res
+
+	@staticmethod
+	def mergeUsers(userIdNew, userIdOld):
 		res = False
-		userTo = UserModel.getUser(userIdFrom)
-		userFrom = UserModel.getUser(userIdTo)
+		userOld = UserModel.getUser(userIdNew)
+		userNew = UserModel.getUser(userIdOld)
 
-		if userTo and userFrom \
-		and (not userTo['facebookId'] and userFrom['facebookId'] and not userFrom['googleId'] \
-		or not userTo['googleId'] and userFrom['googleId'] and not userFrom['facebookId']):
-			mongo.db.spotteds.update_many({'userId': userIdTo}, {'userId': userIdFrom})
-			if not userTo['facebookId'] and userFrom['facebookId']:
-				mongo.db.users.update_one({'_id': userIdFrom}, {'facebookId': userFrom['facebookId']})
+		if userOld and userNew \
+		and (not userOld['facebookId'] and userNew['facebookId'] and not userNew['googleId'] \
+		or not userOld['googleId'] and userNew['googleId'] and not userNew['facebookId']):
+			if not userOld['facebookId'] and userNew['facebookId']:
+				if mongo.db.users.update_one({'_id': userIdNew}, {'facebookId': userNew['facebookId'], 'facebookDate': datetime.datetime.utcnow()}).modified_count == 1:
+					res = True
 
-			elif not userTo['googleId'] and userFrom['googleId']:
-				mongo.db.users.update_one({'_id': userIdFrom}, {'googleId': userFrom['googleId']})
-			res = True
+			elif not userOld['googleId'] and userNew['googleId']:
+				if mongo.db.users.update_one({'_id': userIdNew}, {'googleId': userNew['googleId'], 'googleDate': datetime.datetime.utcnow()}).modified_count == 1:
+					res = True
+
+			if res:
+				mongo.db.spotteds.update_many({'userId': userIdOld}, {'userId': userIdNew})
 
 		return res
 
@@ -179,6 +212,12 @@ class FacebookModel(UserModel):
 		if not FacebookModel.doesFacebookIdExist(facebookToken['user_id']):
 			return UserModel.createUser(facebookToken=facebookToken)
 		return False
+
+	@staticmethod
+	def doesFacebookIdExist(facebookId):
+		"""Checks if a user exists by facebookId.
+		"""
+		return True if FacebookModel.getUserByFacebookId(facebookId) else False
 
 	@staticmethod
 	def getTokenValidation(accessToken, token):
@@ -195,12 +234,6 @@ class FacebookModel(UserModel):
 		"""Gets a user by facebookId.
 		"""
 		return mongo.db.users.find_one({'facebookId': facebookId})
-
-	@staticmethod
-	def doesFacebookIdExist(facebookId):
-		"""Checks if a user exists by facebookId.
-		"""
-		return True if FacebookModel.getUserByFacebookId(facebookId) else False
 
 	@staticmethod
 	def registerFacebookIdToUserId(userId, facebookId):
@@ -236,6 +269,12 @@ class GoogleModel(UserModel):
 		return False
 
 	@staticmethod
+	def doesGoogleIdExist(googleId):
+		"""Checks if a user exists by googleId.
+		"""
+		return True if GoogleModel.getUserByGoogleId(googleId) else False
+
+	@staticmethod
 	def getTokenValidation(clientId, token):
 		"""Calls Google to receive a validation of a Google user token.
 		"""
@@ -257,12 +296,6 @@ class GoogleModel(UserModel):
 		"""Gets a user by googleId.
 		"""
 		return mongo.db.users.find_one({'googleId': googleId})
-
-	@staticmethod
-	def doesGoogleIdExist(googleId):
-		"""Checks if a user exists by googleId.
-		"""
-		return True if GoogleModel.getUserByGoogleId(googleId) else False
 
 	@staticmethod
 	def registerGoogleIdToUserId(userId, googleId):
