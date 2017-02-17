@@ -6,6 +6,7 @@ from app import app
 if __name__=='__main__':
 	if os.path.exists(os.path.join(os.path.basename(__file__), "cert.pem")) and os.path.exists(os.path.join(os.path.basename(__file__), "privkey.pem")):
 		sslContext = ('cert.pem','privkey.pem')
+		print("Certificates found. SSL is enabled.")
 	else:
 		sslContext = None
 

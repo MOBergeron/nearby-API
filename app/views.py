@@ -281,10 +281,9 @@ def spottedsByUserId(userId):
 				userId = user['_id']
 				res = SpottedModel.getMySpotteds(userId)
 		elif FacebookModel.validateUserIdAndFacebookIdLink(userId, request.authorization.username):
-			res = SpottedModel.getSpottedsByUserId(userId)
-			#res = SpottedModel.getMySpotteds(userId)		
+			res = SpottedModel.getMySpotteds(userId)
 		else:
-			res = SpottedModel.getSpottedsByUserId(userId)
+			res = SpottedModel.getSpottedsByUserId(userId, False)
 
 		if type(res) == list:
 			return Response(json.dumps(res, cls=ObjectIdEncoder))
