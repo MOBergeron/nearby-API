@@ -24,7 +24,7 @@ if __name__=='__main__':
 	else:
 		port = app.config['PORT']
 
-	if args.ssl or ('NEARBY_SETTINGS' in environ and config in ['prod', 'production']):
+	if args.ssl or ('NEARBY_SETTINGS' in environ and environ['NEARBY_SETTINGS'] in ['prod', 'production']):
 		if path.exists(path.join(path.dirname(__file__), "cert.pem")) and path.exists(path.join(path.dirname(__file__), "privkey.pem")):
 			sslContext = ('cert.pem','privkey.pem')
 			print("Certificates were found. SSL is enabled.")
