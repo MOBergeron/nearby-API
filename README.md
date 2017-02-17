@@ -90,23 +90,19 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Code:** 200
   * **Content:** 
 ```json
-  {
-    "result": {
-        "anonymity": true,
-        "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
-        "geoJson": {
-            "type": "Point",
-            "coordinates": [
-                70,
-                70
-            ]
-        },
-        "hashKey": 159990,
-        "geohash": 15999003033159630343,
-        "isArchived": false,
-        "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
-        "message": "Lorem Ipsum"
-    }
+{
+    "_id": "58a6267ce66036254c9518f8",
+    "anonymity": true,
+    "userId": "58a6044be66036180128f034",
+    "location": {
+        "type": "Point",
+        "coordinates": [
+            70,
+            70
+        ]
+    },
+    "creationDate": "2017-02-17T05:05:16.930000+00:00",
+    "message": "Lorem Ipsum"
 }
 ```
   * **Meaning:** A spotted object is returned.
@@ -166,39 +162,33 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Code:** 200
   * **Content:** 
 ```json
-{
-    "result": [{
-        "anonymity": true,
-        "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
-        "geoJson": {
-            "type": "Point",
-            "coordinates": [
-                70,
-                70
-            ]
-        },
-        "hashKey": 159990,
-        "geohash": 15999003033159630343,
-        "isArchived": false,
-        "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
-        "message": "Lorem Ipsum1"
-    }, {
-        "anonymity": false,
-        "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
-        "geoJson": {
-            "type": "Point",
-            "coordinates": [
-                70,
-                70
-            ]
-        },
-        "hashKey": 159990,
-        "geohash": 15999003033159630343,
-        "isArchived": false,
-        "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
-        "message": "Lorem Ipsum2"
-    }]
-}
+[{
+    "_id": "58a6267ce66036254c9518f8",
+    "anonymity": true,
+    "userId": "58a6044be66036180128f034",
+    "location": {
+        "type": "Point",
+        "coordinates": [
+            70,
+            70
+        ]
+    },
+    "creationDate": "2017-02-17T05:05:16.930000+00:00",
+    "message": "Lorem Ipsum1"
+}, {
+    "_id": "58a6267ce66036254c9518f8",
+    "anonymity": false,
+    "userId": "58a6044be66036180128f034",
+    "location": {
+        "type": "Point",
+        "coordinates": [
+            70,
+            70
+        ]
+    },
+    "creationDate": "2017-02-17T05:05:16.930000+00:00",
+    "message": "Lorem Ipsum2"
+}]
 ```
   * **Meaning:** A list of spotted object is returned.
  
@@ -241,39 +231,33 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Code:** 200
   * **Content:** 
 ```json
-{
-    "result": [{
-        "anonymity": true,
-        "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
-        "geoJson": {
-            "type": "Point",
-            "coordinates": [
-                70,
-                70
-            ]
-        },
-        "hashKey": 159990,
-        "geohash": 15999003033159630343,
-        "isArchived": false,
-        "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
-        "message": "Lorem Ipsum1"
-    }, {
-        "anonymity": false,
-        "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
-        "geoJson": {
-            "type": "Point",
-            "coordinates": [
-                70,
-                70
-            ]
-        },
-        "hashKey": 159990,
-        "geohash": 15999003033159630343,
-        "isArchived": false,
-        "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
-        "message": "Lorem Ipsum2"
-    }]
-}
+[{
+    "_id": "58a6267ce66036254c9518f8",
+    "anonymity": true,
+    "userId": "58a6044be66036180128f034",
+    "location": {
+        "type": "Point",
+        "coordinates": [
+            70,
+            70
+        ]
+    },
+    "creationDate": "2017-02-17T05:05:16.930000+00:00",
+    "message": "Lorem Ipsum1"
+}, {
+    "_id": "58a6267ce66036254c9518f8",
+    "anonymity": false,
+    "userId": "58a6044be66036180128f034",
+    "location": {
+        "type": "Point",
+        "coordinates": [
+            70,
+            70
+        ]
+    },
+    "creationDate": "2017-02-17T05:05:16.930000+00:00",
+    "message": "Lorem Ipsum2"
+}]
 ```
   * **Meaning:** A list of spotted object is returned.
  
@@ -322,39 +306,33 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Code:** 200
   * **Content:** 
 ```json
-{
-    "result": [{
-        "anonymity": true,
-        "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
-        "geoJson": {
-            "type": "Point",
-            "coordinates": [
-                70,
-                70
-            ]
-        },
-        "hashKey": 159990,
-        "geohash": 15999003033159630343,
-        "isArchived": false,
-        "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
-        "message": "Lorem Ipsum1"
-    }, {
-        "anonymity": false,
-        "userId": "04d35c92-5896-4ecc-8189-449b02b40f1c",
-        "geoJson": {
-            "type": "Point",
-            "coordinates": [
-                70,
-                70
-            ]
-        },
-        "hashKey": 159990,
-        "geohash": 15999003033159630343,
-        "isArchived": false,
-        "spottedId": "fcfb501d-e109-44a9-81cc-58e57e1ad112",
-        "message": "Lorem Ipsum2"
-    }]
-}
+[{
+    "_id": "58a6267ce66036254c9518f8",
+    "anonymity": true,
+    "userId": "58a6044be66036180128f034",
+    "location": {
+        "type": "Point",
+        "coordinates": [
+            70,
+            70
+        ]
+    },
+    "creationDate": "2017-02-17T05:05:16.930000+00:00",
+    "message": "Lorem Ipsum1"
+}, {
+    "_id": "58a6267ce66036254c9518f8",
+    "anonymity": false,
+    "userId": "58a6044be66036180128f034",
+    "location": {
+        "type": "Point",
+        "coordinates": [
+            70,
+            70
+        ]
+    },
+    "creationDate": "2017-02-17T05:05:16.930000+00:00",
+    "message": "Lorem Ipsum2"
+}]
 ```
   * **Meaning:** A list of spotted object is returned.
  
@@ -579,20 +557,17 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 * Python 2.7
 * Flask 0.12
 * Flask-WTF 0.14
-* Flask-Script 0.4.0
 * boto3 1.4.4
-* python-geohash 0.8.3
+* python-pymongo 3.4.0
 
 ## Installation
 First, you have to install python 2.7. It is quite easy depending on your OS.
 
 Then, run the following command to install dependencies : 
-`pip install flask flask-wtf flask-script boto3 python-geohash`
+`pip install flask flask-wtf flask-pymongo boto3`
 
-Make `run.sh` executable with `chmod +x run.sh`.
+Make `run.py` executable with `chmod +x run.py`.
 
-Once this is done, you can either install or not DynamoDB by executing the following `./run.py install`. If not, download it by yourself and unzip it in `instance/dynamodb/` for the server to work.
-
-After all of this, you are ready to run the server with `./run.py runserver -e dev -d local` which runs the server with the development environment and starts DynamoDB locally
+`TO BE COMPLETED`
 
 P.S : You won't be able to run the server on production since you are missing important keys that are not in the repository.
