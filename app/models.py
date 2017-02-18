@@ -113,10 +113,7 @@ class SpottedModel(object):
 class UserModel(object):
 
 	@staticmethod
-	def createUser(facebookToken=None, googleToken=None):
-		"""THIS METHOD SHOULDN'T BE USED ELSEWHERE THAN IN FacebookModel AND GoogleModel.
-		Creates a user with either facebookToken or googleToken.
-		"""
+	def _createUser(facebookToken=None, googleToken=None):
 		facebookId = None
 		googleId = None
 		facebookDate = None
@@ -158,43 +155,58 @@ class UserModel(object):
 		return userId
 
 	@staticmethod
-	def disableUser(userId):
+	def _disableUser(userId, disabled):
 		res = False
 		if isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
 
-		if mongo.db.users.update_one({'_id': userId}, {'$set': {'disabled': True}}).modified_count == 1:
-			if mongo.db.spotteds.count({'userId': userId}) == mongo.db.spotteds.update_many({'userId': userId}, {'$set': {'archived': True}}).modified_count:
+		if mongo.db.users.update_one({'_id': userId}, {'$set': {'disabled': disabled}}).modified_count == 1:
+			if mongo.db.spotteds.count({'userId': userId}) == mongo.db.spotteds.update_many({'userId': userId}, {'$set': {'archived': disabled}}).modified_count:
 				res = True
 			else:
 				# Reverte
-				mongo.db.users.update_one({'_id': userId}, {'$set': {'disabled': False}})
-				mongo.db.spotteds.update_many({'userId': userId}, {'$set': {'archived': False}})
+				mongo.db.users.update_one({'_id': userId}, {'$set': {'disabled': not disabled}})
+				mongo.db.spotteds.update_many({'userId': userId}, {'$set': {'archived': not disabled}})
 		return res
+
+	@staticmethod
+	def _getUser(filters):
+		return mongo.db.users.find_one(filters)
+
+	@staticmethod
+	def _isDisabled(filters):
+		res = True
+
+		user = mongo.db.users.find_one(filters)
+		if user and not user['disabled']:
+			res = False
+
+		return res
+
+	@staticmethod
+	def _linkToUserId(userId, filters):
+		if isinstance(userId, ObjectId):
+			userId = ObjectId(userId)
+
+		return mongo.db.users.update_one({'_id': userId}, filters).modified_count == 1
+
+	@staticmethod
+	def disableUser(userId):
+		"""Disable a user
+		"""
+		return UserModel._disableUser(userId, True)
 
 	@staticmethod
 	def doesUserExist(userId):
 		"""Checks if a user exists by userId.
 		"""
-		if isinstance(userId, ObjectId):
-			userId = ObjectId(userId)
-
 		return True if UserModel.getUser(userId) else False
 
 	@staticmethod
 	def enableUser(userId):
-		res = False
-		if isinstance(userId, ObjectId):
-			userId = ObjectId(userId)
-
-		if mongo.db.users.update_one({'_id': userId}, {'$set': {'disabled': False}}).modified_count == 1:
-			if mongo.db.spotteds.count({'userId': userId}) == mongo.db.spotteds.update_many({'userId': userId}, {'$set': {'archived': False}}).modified_count:
-				res = True
-			else:
-				# Reverte
-				mongo.db.users.update_one({'_id': userId}, {'$set': {'disabled': True}})
-				mongo.db.spotteds.update_many({'userId': userId}, {'$set': {'archived': True}})
-		return res
+		"""Enable a user
+		"""
+		return UserModel._disableUser(userId, False)
 
 	@staticmethod
 	def getUser(userId):
@@ -202,46 +214,45 @@ class UserModel(object):
 		"""
 		if isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
-		
-		return mongo.db.users.find_one({'_id': userId})
+
+		return UserModel._getUser({'_id': userId})
 
 	@staticmethod
 	def isDisabled(userId):
-		res = True
+		"""Check if a user is disabled
+		"""
 		if isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
-		
-		user = mongo.db.users.find_one({'_id': userId})
-		if user and not user.disabled:
-			res = False
 
-		return res
+		return UserModel._isDisabled({'_id': userId})
 
 	@staticmethod
-	def mergeUsers(userIdNew, userIdOld):
+	def mergeUsers(primaryUserId, userIdToMerge):
+		"""Merge a Nearby account to another Nearby account with different service providers
+		"""
 		res = False
-		if isinstance(userIdNew, ObjectId):
-			userIdNew = ObjectId(userIdNew)
+		if isinstance(primaryUserId, ObjectId):
+			primaryUserId = ObjectId(primaryUserId)
 
-		if isinstance(userIdOld, ObjectId):
-			userIdOld = ObjectId(userIdOld)
+		if isinstance(userIdToMerge, ObjectId):
+			userIdToMerge = ObjectId(userIdToMerge)
 
-		userOld = UserModel.getUser(userIdNew)
-		userNew = UserModel.getUser(userIdOld)
+		userToMerge = UserModel.getUser(primaryUserId)
+		primaryUser = UserModel.getUser(userIdToMerge)
 
-		if userOld and userNew \
-		and (not userOld['facebookId'] and userNew['facebookId'] and not userNew['googleId'] \
-		or not userOld['googleId'] and userNew['googleId'] and not userNew['facebookId']):
-			if not userOld['facebookId'] and userNew['facebookId']:
-				if mongo.db.users.update_one({'_id': userIdNew}, {'facebookId': userNew['facebookId'], 'facebookDate': datetime.datetime.utcnow()}).modified_count == 1:
+		if userToMerge and primaryUser \
+		and (not userToMerge['facebookId'] and primaryUser['facebookId'] and not primaryUser['googleId'] \
+		or not userToMerge['googleId'] and primaryUser['googleId'] and not primaryUser['facebookId']):
+			if not userToMerge['facebookId'] and primaryUser['facebookId']:
+				if mongo.db.users.update_one({'_id': primaryUserId}, {'facebookId': primaryUser['facebookId'], 'facebookDate': datetime.datetime.utcnow()}).modified_count == 1:
 					res = True
 
-			elif not userOld['googleId'] and userNew['googleId']:
-				if mongo.db.users.update_one({'_id': userIdNew}, {'googleId': userNew['googleId'], 'googleDate': datetime.datetime.utcnow()}).modified_count == 1:
+			elif not userToMerge['googleId'] and primaryUser['googleId']:
+				if mongo.db.users.update_one({'_id': primaryUserId}, {'googleId': primaryUser['googleId'], 'googleDate': datetime.datetime.utcnow()}).modified_count == 1:
 					res = True
 
 			if res:
-				mongo.db.spotteds.update_many({'userId': userIdOld}, {'userId': userIdNew})
+				mongo.db.spotteds.update_many({'userId': userIdToMerge}, {'userId': primaryUserId})
 
 		return res
 
@@ -249,16 +260,16 @@ class UserModel(object):
 class FacebookModel(UserModel):
 
 	@staticmethod
-	def createUserWithFacebook(facebookToken):
+	def createUser(facebookToken):
 		"""Creates a user related to a facebookToken.
 		"""
-		return UserModel.createUser(facebookToken=facebookToken)
+		return UserModel._createUser(facebookToken=facebookToken)
 
 	@staticmethod
-	def doesFacebookIdExist(facebookId):
+	def doesUserExist(facebookId):
 		"""Checks if a user exists by facebookId.
 		"""
-		return True if FacebookModel.getUserByFacebookId(facebookId) else False
+		return True if FacebookModel.getUser(facebookId) else False
 
 	@staticmethod
 	def getTokenValidation(accessToken, token):
@@ -271,33 +282,36 @@ class FacebookModel(UserModel):
 		return data
 
 	@staticmethod
-	def getUserByFacebookId(facebookId):
+	def getUser(facebookId):
 		"""Gets a user by facebookId.
 		"""
-		return mongo.db.users.find_one({'facebookId': facebookId})
+		return UserModel._getUser({'facebookId': facebookId})
 
 	@staticmethod
-	def linkFacebookIdToUserId(userId, facebookId):
+	def isDisabled(facebookId):
+		"""Check if a Facebook user is disabled
+		"""
+		return UserModel._isDisabled({'facebookId': facebookId})
+
+	@staticmethod
+	def linkToUserId(userId, facebookId):
 		"""Register a Facebook account to a user.
 		"""
-		if isinstance(userId, ObjectId):
-			userId = ObjectId(userId)
-
-		return mongo.db.users.update_one({'_id': userId}, {'facebookId': facebookId}).modified_count == 1
+		return UserModel._linkToUserId(userId, {'facebookId': facebookId})
 
 class GoogleModel(UserModel):
 
 	@staticmethod
-	def createUserWithGoogle(googleToken):
+	def createUser(googleToken):
 		"""Creates a user related to a googleToken.
 		"""
-		return UserModel.createUser(googleToken=googleToken)
+		return UserModel._createUser(googleToken=googleToken)
 
 	@staticmethod
-	def doesGoogleIdExist(googleId):
+	def doesUserExist(googleId):
 		"""Checks if a user exists by googleId.
 		"""
-		return True if GoogleModel.getUserByGoogleId(googleId) else False
+		return True if GoogleModel.getUser(googleId) else False
 
 	@staticmethod
 	def getTokenValidation(clientId, token):
@@ -317,16 +331,19 @@ class GoogleModel(UserModel):
 		return tokenInfo
 
 	@staticmethod
-	def getUserByGoogleId(googleId):
+	def getUser(googleId):
 		"""Gets a user by googleId.
 		"""
-		return mongo.db.users.find_one({'googleId': googleId})
+		return UserModel._getUser({'googleId': googleId})
 
 	@staticmethod
-	def linkGoogleIdToUserId(userId, googleId):
+	def isDisabled(googleId):
+		"""Check if a Google user is disabled
+		"""
+		return UserModel._isDisabled({'googleId': googleId})
+
+	@staticmethod
+	def linkToUserId(userId, googleId):
 		"""Register a Google account to a user.
 		"""
-		if isinstance(userId, ObjectId):
-			userId = ObjectId(userId)
-
-		return mongo.db.users.update_one({'_id': userId}, {'googleId': googleId}).modified_count == 1
+		return UserModel._linkToUserId(userId, {'googleId': googleId})

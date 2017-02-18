@@ -25,18 +25,21 @@ def requireAuthenticate(acceptGuest):
 						g.loginWith = 'Guest'
 						return f(*args, **kwargs)
 				else:
+					g.loginWith = None
 					if request.headers['Service-Provider'] == 'Facebook':
 						g.facebookToken = FacebookModel.getTokenValidation(app.config['FACEBOOK_ACCESS_TOKEN'], auth.password)
 						if g.facebookToken['is_valid'] and g.facebookToken['user_id'] == auth.username:
-							if str(request.url_rule) == '/v1/login' or FacebookModel.doesFacebookIdExist(auth.username):
-								g.loginWith = 'Facebook'
-								return f(*args, **kwargs)
+							g.currentUser = FacebookModel.getUser(auth.username)
+							g.loginWith = 'Facebook'
 					elif request.headers['Service-Provider'] == 'Google':
 						g.googleToken = GoogleModel.getTokenValidation(app.config['GOOGLE_CLIENT_ID'], auth.password)
 						if g.googleToken and g.googleToken['sub'] == auth.username:
-							if str(request.url_rule) == '/v1/login' or GoogleModel.doesGoogleIdExist(auth.username):
-								g.loginWith = 'Google'
-								return f(*args, **kwargs)
+							g.currentUser = GoogleModel.getUser(auth.username)
+							g.loginWith = 'Google'
+					
+					if g.loginWith and (str(request.url_rule) == '/v1/login' or g.currentUser):
+						return f(*args, **kwargs)
+
 			return abort(401)
 		return decorated_function
 	return requireAuth
@@ -81,11 +84,12 @@ def internalServerError(e):
 @requireAuthenticate(acceptGuest=False)
 def loginFacebook():
 	if g.loginWith == 'Facebook':
-		if not FacebookModel.doesFacebookIdExist(request.authorization.username):
-			if FacebookModel.createUserWithFacebook(g.facebookToken):
+		if not FacebookModel.doesUserExist(request.authorization.username):
+			if FacebookModel.createUser(g.facebookToken):
 				return json.dumps({'result':'Created'}), 201
+
 		elif FacebookModel.isDisabled(request.authorization.username):
-			user = FacebookModel.getUserByFacebookId(request.authorization.username)
+			user = FacebookModel.getUser(request.authorization.username)
 			if user:
 				if UserModel.enableUser(user['_id']):
 					return json.dumps({'result':'OK'}), 200
@@ -93,11 +97,12 @@ def loginFacebook():
 			return json.dumps({'result':'OK'}), 200
 
 	elif g.loginWith == 'Google':
-		if not GoogleModel.doesGoogleIdExist(request.authorization.username):
-			if GoogleModel.createUserWithGoogle(g.googleToken):
+		if not GoogleModel.doesUserExist(request.authorization.username):
+			if GoogleModel.createUser(g.googleToken):
 				return json.dumps({'result':'Created'}), 201
+
 		elif GoogleModel.isDisabled(request.authorization.username):
-			user = GoogleModel.getUserByGoogleId(request.authorization.username)
+			user = GoogleModel.getUser(request.authorization.username)
 			if user:
 				if UserModel.enableUser(user['_id']):
 					return json.dumps({'result':'OK'}), 200
@@ -109,57 +114,44 @@ def loginFacebook():
 @app.route("/v1/disable", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
 def disableAccount():
-	user = None
-	if g.loginWith == 'Facebook':
-		user = FacebookModel.getUserByFacebookId(request.authorization.username)
-	elif g.loginWith == 'Google':
-		user = GoogleModel.getUserByGoogleId(request.authorization.username)
-	
-	if user:
-		if UserModel.disableUser(user['_id']):
-			return json.dumps({'result':'OK'}), 200
+	if UserModel.disableUser(g.currentUser['_id']):
+		return json.dumps({'result':'OK'}), 200
 
 	return abort(400)
 
-#@app.route("/v1/merge/facebook", methods=['POST'])
+@app.route("/v1/merge/facebook", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
 def mergeFacebook():
 	"""Merges an existing Facebook account to an existing Google account.
 	"""
 	form = MergeFacebookForm()
 	# Check if the Service-Provider is Google
-	if form.validate_on_submit() and g.loginWith == 'Google':
+	if form.validate_on_submit() and g.loginWith == 'Google' and g.currentUser['facebookId'] is None:
 		facebookToken = FacebookModel.getTokenValidation(app.config['FACEBOOK_ACCESS_TOKEN'], form.token.data)
 		if facebookToken['is_valid'] and facebookToken['user_id'] == form.facebookId.data:
-			# Continue only if the account doesn't exist yet.
-			if FacebookModel.doesFacebookIdExist(form.facebookId.data):
-				googleUser = GoogleModel.getUserByGoogleId(request.authorization.username)
-				facebookUser = FacebookModel.getUserByFacebookId(form.facebookId.data)
-
-				if googleUser and googleUser['facebookId'] == None:
-					if UserModel.mergeUsers(facebookUser['userId'], googleUser['userId']):
-						return json.dumps({'result':'OK'}), 200
+			# Continue only if the account does exist.
+			if FacebookModel.doesUserExist(form.facebookId.data):
+				facebookUser = FacebookModel.getUser(form.facebookId.data)
+				if UserModel.mergeUsers(g.currentUser['_id'], facebookUser['_id']):
+					return json.dumps({'result':'OK'}), 200
 
 	return abort(400)
 
-#@app.route("/v1/merge/google", methods=['POST'])
+@app.route("/v1/merge/google", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
 def mergeGoogle():
 	"""Merges an existing Google account to an existing Facebook account.
 	"""
 	form = MergeGoogleForm()
 	# Check if the Service-Provider is Facebook
-	if form.validate_on_submit() and g.loginWith == 'Facebook':
+	if form.validate_on_submit() and g.loginWith == 'Facebook' and g.currentUser['googleId'] is None:
 		googleToken = GoogleModel.getTokenValidation(app.config['GOOGLE_CLIENT_ID'], form.token.data)
 		if googleToken and googleToken['sub'] == form.googleId.data:
-			# Continue only if the account doesn't exist yet.
-			if GoogleModel.doesGoogleIdExist(form.googleId.data):
-				facebookUser = FacebookModel.getUserByFacebookId(request.authorization.username)
-				googleUser = GoogleModel.getUserByGoogleId(form.googleId.data)
-
-				if facebookUser and facebookUser['googleId'] == None:
-					if UserModel.mergeUsers(googleUser['userId'], facebookUser['userId']):
-						return json.dumps({'result':'OK'}), 200
+			# Continue only if the account does exist.
+			if GoogleModel.doesUserExist(form.googleId.data):
+				googleUser = GoogleModel.getUser(form.googleId.data)
+				if UserModel.mergeUsers(g.currentUser['_id'], googleUser['_id']):
+					return json.dumps({'result':'OK'}), 200
 
 	return abort(400)
 
@@ -170,17 +162,13 @@ def linkFacebook():
 	"""
 	form = LinkFacebookForm()
 	# Check if the Service-Provider is Google
-	if form.validate_on_submit() and g.loginWith == 'Google':
+	if form.validate_on_submit() and g.loginWith == 'Google' and g.currentUser['facebookId'] is None:
 		facebookToken = FacebookModel.getTokenValidation(app.config['FACEBOOK_ACCESS_TOKEN'], form.token.data)
 		if facebookToken['is_valid'] and facebookToken['user_id'] == form.facebookId.data:
 			# Continue only if the account doesn't exist yet.
-			if not FacebookModel.doesFacebookIdExist(form.facebookId.data):
-				user = GoogleModel.getUserByGoogleId(request.authorization.username)
-				if user and user['facebookId'] == None:
-					if FacebookModel.linkFacebookIdToUserId(user['_id'], form.facebookId.data):
-						return json.dumps({'result':'OK'}), 200
-				else:
-					return abort(403)
+			if not FacebookModel.doesUserExist(form.facebookId.data):
+				if FacebookModel.linkToUserId(g.currentUser['_id'], form.facebookId.data):
+					return json.dumps({'result':'OK'}), 200
 			else:
 				return abort(403)
 		else:
@@ -195,17 +183,13 @@ def linkGoogle():
 	"""
 	form = LinkGoogleForm()
 	# Check if the Service-Provider is Facebook
-	if form.validate_on_submit() and g.loginWith == 'Facebook':
+	if form.validate_on_submit() and g.loginWith == 'Facebook' and g.currentUser['googleId'] is None:
 		googleToken = GoogleModel.getTokenValidation(app.config['GOOGLE_CLIENT_ID'], form.token.data)
 		if googleToken and googleToken['sub'] == form.googleId.data:
 			# Continue only if the account doesn't exist yet.
-			if not GoogleModel.doesGoogleIdExist(form.googleId.data):
-				user = FacebookModel.getUserByFacebookId(request.authorization.username)
-				if user and user['googleId'] == None:
-					if GoogleModel.linkGoogleIdToUserId(user['_id'], form.googleId.data):
-						return json.dumps({'result':'OK'}), 200
-				else:
-					return abort(403)
+			if not GoogleModel.doesUserExist(form.googleId.data):
+				if GoogleModel.linkToUserId(g.currentUser['_id'], form.googleId.data):
+					return json.dumps({'result':'OK'}), 200
 			else:
 				return abort(403)
 		else:
@@ -226,15 +210,9 @@ def createSpotted():
 		message = form.message.data
 		picture = form.picture.data
 
-		if g.loginWith == 'Facebook':
-			user = FacebookModel.getUserByFacebookId(request.authorization.username)
-		elif g.loginWith == 'Google':
-			user = GoogleModel.getUserByGoogleId(request.authorization.username)
-
-		if user:
-			res = SpottedModel.createSpotted(userId=user['_id'], anonymity=anonymity, latitude=latitude, longitude=longitude, message=message, picture=picture)
-			if res:
-				return Response(json.dumps({'result': res}, cls=CustomJSONEncoder), status=201, mimetype="application/json")
+		res = SpottedModel.createSpotted(userId=g.currentUser['_id'], anonymity=anonymity, latitude=latitude, longitude=longitude, message=message, picture=picture)
+		if res:
+			return Response(json.dumps({'result': res}, cls=CustomJSONEncoder), status=201, mimetype="application/json")
 
 	return abort(400)
 
@@ -284,14 +262,8 @@ def spottedsByUserId(userId):
 	if userId and (validateObjectId(userId) or userId == 'me'):
 		res = False
 		if userId == 'me':
-			if g.loginWith == 'Facebook':
-				user = FacebookModel.getUserByFacebookId(request.authorization.username)
-			elif g.loginWith == 'Google':
-				user = GoogleModel.getUserByGoogleId(request.authorization.username)
-			if user:
-				userId = user['_id']
-				res = SpottedModel.getMySpotteds(userId)
-		elif FacebookModel.validateUserIdAndFacebookIdLink(userId, request.authorization.username):
+			res = SpottedModel.getMySpotteds(g.currentUser['_id'])
+		elif str(g.currentUser['_id'])  == userId:
 			res = SpottedModel.getMySpotteds(userId)
 		else:
 			res = SpottedModel.getSpottedsByUserId(userId)
