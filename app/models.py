@@ -7,6 +7,7 @@ from bson import ObjectId
 from oauth2client import client, crypt
 
 from app import mongo
+from app.s3connection import S3Connection
 
 class SpottedModel(object):
 
@@ -14,9 +15,9 @@ class SpottedModel(object):
 	def createSpotted(userId, anonymity, latitude, longitude, message, picture=None):
 		"""Creates a spotted.
 		"""
+		pictureURL = None
 		if not picture is None:
-			# Save it to S3, then keep the picture link to save it in the table.
-			pass
+			pictureURL = S3Connection().saveFile(picture)
 
 		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
@@ -33,8 +34,8 @@ class SpottedModel(object):
 						float(longitude)
 					]
 				},
-				'creationDate' : datetime.datetime.utcnow(),
-				# Add picture link here
+				'creationDate': datetime.datetime.utcnow(),
+				'pictureURL': pictureURL,
 				'message': message
 			}
 		).inserted_id

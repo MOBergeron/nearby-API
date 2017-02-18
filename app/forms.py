@@ -2,7 +2,7 @@
 import cgi
 
 from flask_wtf import FlaskForm
-
+from flask_wtf.file import FileField, FileAllowed
 from wtforms import BooleanField, DecimalField, IntegerField, StringField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional, ValidationError
 
@@ -38,8 +38,7 @@ class CreateSpottedForm(FlaskForm):
 	latitude = DecimalField('latitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LATITUDE, max=MAXIMUM_LATITUDE)])
 	longitude = DecimalField('longitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LONGITUDE, max=MAXIMUM_LONGITUDE)])
 	message = TextAreaField('message', validators=[DataRequired(), Length(max=MAXIMUM_SPOTTED_MESSAGE_LENGTH), escapeSpecialCharacters])
-	
-	#picture = Field('picture', validators=[Optional()])
+	picture = FileField('picture', validators=[FileAllowed(['jpg','png'])], default=None)
 
 class GetSpottedsForm(FlaskForm):
 	minLat = DecimalField('minLat', validators=[DataRequired(), NumberRange(min=MINIMUM_LATITUDE, max=MAXIMUM_LATITUDE)])

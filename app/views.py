@@ -219,12 +219,12 @@ def createSpotted():
 	form = CreateSpottedForm()
 	
 	# Creates a spotted according to form data
-	if form.validate_on_submit():
+	if form.validate():
 		anonymity = form.anonymity.data
 		longitude = form.longitude.data
 		latitude = form.latitude.data
 		message = form.message.data
-		#picture = form.picture.data
+		picture = form.picture.data
 
 		if g.loginWith == 'Facebook':
 			user = FacebookModel.getUserByFacebookId(request.authorization.username)
@@ -232,10 +232,10 @@ def createSpotted():
 			user = GoogleModel.getUserByGoogleId(request.authorization.username)
 
 		if user:
-			res = SpottedModel.createSpotted(userId=user['_id'], anonymity=anonymity, latitude=latitude, longitude=longitude, message=message, picture=None)
+			res = SpottedModel.createSpotted(userId=user['_id'], anonymity=anonymity, latitude=latitude, longitude=longitude, message=message, picture=picture)
 			if res:
 				return Response(json.dumps({'result': res}, cls=CustomJSONEncoder), status=201, mimetype="application/json")
-	
+
 	return abort(400)
 
 @app.route("/v1/spotted/<spottedId>", methods=['GET'])
