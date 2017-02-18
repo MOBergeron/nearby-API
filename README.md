@@ -102,6 +102,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
         ]
     },
     "creationDate": "2017-02-17T05:05:16.930000+00:00",
+    "pictureURL": "https://s3.ca-central-1.amazonaws.com/spottednearby/41c8f63a-3f61-44d1-9d7a-ff3638f6c292.jpg",
     "message": "Lorem Ipsum"
 }
 ```
@@ -187,6 +188,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
         ]
     },
     "creationDate": "2017-02-17T05:05:16.930000+00:00",
+    "pictureURL": "https://s3.ca-central-1.amazonaws.com/spottednearby/41c8f63a-3f61-44d1-9d7a-ff3638f6c292.jpg",
     "message": "Lorem Ipsum2"
 }]
 ```
@@ -243,6 +245,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
         ]
     },
     "creationDate": "2017-02-17T05:05:16.930000+00:00",
+    "pictureURL": "https://s3.ca-central-1.amazonaws.com/spottednearby/41c8f63a-3f61-44d1-9d7a-ff3638f6c292.jpg",
     "message": "Lorem Ipsum1"
 }, {
     "_id": "58a6267ce66036254c9518f8",
@@ -256,6 +259,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
         ]
     },
     "creationDate": "2017-02-17T05:05:16.930000+00:00",
+    "pictureURL": "https://s3.ca-central-1.amazonaws.com/spottednearby/41c8f63a-3f61-44d1-9d7a-ff3638f6c292.jpg",
     "message": "Lorem Ipsum2"
 }]
 ```
@@ -318,6 +322,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
         ]
     },
     "creationDate": "2017-02-17T05:05:16.930000+00:00",
+    "pictureURL": "https://s3.ca-central-1.amazonaws.com/spottednearby/41c8f63a-3f61-44d1-9d7a-ff3638f6c292.jpg",
     "message": "Lorem Ipsum1"
 }, {
     "_id": "58a6267ce66036254c9518f8",
@@ -331,6 +336,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
         ]
     },
     "creationDate": "2017-02-17T05:05:16.930000+00:00",
+    "pictureURL": "https://s3.ca-central-1.amazonaws.com/spottednearby/41c8f63a-3f61-44d1-9d7a-ff3638f6c292.jpg",
     "message": "Lorem Ipsum2"
 }]
 ```
@@ -427,7 +433,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
    
    **Optional:**
    
-   `picture=[url]`
+   `picture=[file]`
 
 * **Success Response**
   
