@@ -77,13 +77,6 @@ def methodNotAllowed(e):
 def internalServerError(e):
 	return Response(json.dumps({'error':'Internal Server Error'}), status=500, mimetype="application/json")
 
-@app.route("/test")
-def test():
-	output = []
-	for s in mongo.db.users.find():
-		output.append(s)
-	return json.dumps(output, cls=CustomJSONEncoder)
-
 @app.route("/v1/login", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
 def loginFacebook():
@@ -91,6 +84,11 @@ def loginFacebook():
 		if not FacebookModel.doesFacebookIdExist(request.authorization.username):
 			if FacebookModel.createUserWithFacebook(g.facebookToken):
 				return json.dumps({'result':'Created'}), 201
+		elif FacebookModel.isDisabled(request.authorization.username):
+			user = FacebookModel.getUserByFacebookId(request.authorization.username)
+			if user:
+				if UserModel.enableUser(user['_id']):
+					return json.dumps({'result':'OK'}), 200
 		else:
 			return json.dumps({'result':'OK'}), 200
 
@@ -98,6 +96,11 @@ def loginFacebook():
 		if not GoogleModel.doesGoogleIdExist(request.authorization.username):
 			if GoogleModel.createUserWithGoogle(g.googleToken):
 				return json.dumps({'result':'Created'}), 201
+		elif GoogleModel.isDisabled(request.authorization.username):
+			user = GoogleModel.getUserByGoogleId(request.authorization.username)
+			if user:
+				if UserModel.enableUser(user['_id']):
+					return json.dumps({'result':'OK'}), 200
 		else:
 			return json.dumps({'result':'OK'}), 200
 		
@@ -114,21 +117,6 @@ def disableAccount():
 	
 	if user:
 		if UserModel.disableUser(user['_id']):
-			return json.dumps({'result':'OK'}), 200
-
-	return abort(400)
-
-@app.route("/v1/enable", methods=['POST'])
-@requireAuthenticate(acceptGuest=False)
-def enableAccount():
-	user = None
-	if g.loginWith == 'Facebook':
-		user = FacebookModel.getUserByFacebookId(request.authorization.username)
-	elif g.loginWith == 'Google':
-		user = GoogleModel.getUserByGoogleId(request.authorization.username)
-	
-	if user:
-		if UserModel.enableUser(user['_id']):
 			return json.dumps({'result':'OK'}), 200
 
 	return abort(400)
