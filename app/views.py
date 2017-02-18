@@ -10,11 +10,7 @@ from app.models import SpottedModel, UserModel, FacebookModel, GoogleModel
 from app.utils import CustomJSONEncoder, validateObjectId
 
 from flask import g, abort, request, Response
-from flask_cors import CORS, cross_origin
-
-ALLOW_CROSS_ORIGIN_FROM = ["https://nearbyapp.github.io"]
-
-cors = CORS(app)
+from flask_cors import cross_origin
 
 # Decorators
 def requireAuthenticate(acceptGuest):
@@ -46,18 +42,6 @@ def requireAuthenticate(acceptGuest):
 			return abort(401)
 		return decorated_function
 	return requireAuth
-
-def allowCrossOrigin(f):
-	@wraps(f)
-	def decorated_function(*args, **kwargs):
-		if 'Origin' in request.headers:
-			if request.headers['Origin'] in ALLOW_CROSS_ORIGIN_FROM:
-				res = f(*args, **kwargs)
-				res.headers['Access-Control-Allow-Origin'] = request.headers['Origin']
-				return res
-			return abort(403)
-		return f(*args, **kwargs)
-	return decorated_function
 
 @app.errorhandler(400)
 def badRequest(e):
@@ -220,7 +204,7 @@ def createSpotted():
 	return abort(400)
 
 @app.route("/v1/spotted/<spottedId>", methods=['GET'])
-@cross_origin(origin="https://nearbyapp.github.io")
+@cross_origin(origin="*")
 @requireAuthenticate(acceptGuest=True)
 def spotted(spottedId):
 	# Returns a specific spotted
@@ -236,7 +220,7 @@ def spotted(spottedId):
 	return abort(400)
 
 @app.route("/v1/spotteds", methods=['GET'])
-@cross_origin(origin="https://nearbyapp.github.io")
+@cross_origin(origin="*")
 @requireAuthenticate(acceptGuest=True)
 def spotteds():
 	form = GetSpottedsForm(request.args)
