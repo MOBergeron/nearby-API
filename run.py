@@ -24,13 +24,13 @@ if __name__=='__main__':
 	else:
 		port = app.config['PORT']
 
-	if (not 'AWS_ACCESS_KEY_ID' in environ or not 'AWS_SECRET_ACCESS_KEY' in environ) \
-	    and 'AWS_ACCESS_KEY_ID' in app.config and 'AWS_SECRET_ACCESS_KEY' in app.config:
-		environ['AWS_ACCESS_KEY_ID'] = app.config['AWS_ACCESS_KEY_ID']
-		environ['AWS_SECRET_ACCESS_KEY'] = app.config['AWS_SECRET_ACCESS_KEY']
-	else:
-		print("Missing AWS keys")
-		exit(0)
+	if not 'AWS_ACCESS_KEY_ID' in environ or not 'AWS_SECRET_ACCESS_KEY' in environ:
+		if 'AWS_ACCESS_KEY_ID' in app.config and 'AWS_SECRET_ACCESS_KEY' in app.config:
+			environ['AWS_ACCESS_KEY_ID'] = app.config['AWS_ACCESS_KEY_ID']
+			environ['AWS_SECRET_ACCESS_KEY'] = app.config['AWS_SECRET_ACCESS_KEY']
+		else:
+			print("Missing AWS keys")
+			exit(0)
 
 	if args.ssl or ('NEARBY_SETTINGS' in environ and environ['NEARBY_SETTINGS'] in ['prod', 'production']):
 		if path.exists(path.join(path.dirname(__file__), "cert.pem")) and path.exists(path.join(path.dirname(__file__), "privkey.pem")):

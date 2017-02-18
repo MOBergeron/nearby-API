@@ -10,6 +10,7 @@ from app.models import SpottedModel, UserModel, FacebookModel, GoogleModel
 from app.utils import CustomJSONEncoder, validateObjectId
 
 from flask import g, abort, request, Response
+from flask_cors import CORS, cross_origin
 
 ALLOW_CROSS_ORIGIN_FROM = ["https://nearbyapp.github.io"]
 
