@@ -252,9 +252,7 @@ class FacebookModel(UserModel):
 	def createUserWithFacebook(facebookToken):
 		"""Creates a user related to a facebookToken.
 		"""
-		if not FacebookModel.doesFacebookIdExist(facebookToken['user_id']):
-			return UserModel.createUser(facebookToken=facebookToken)
-		return False
+		return UserModel.createUser(facebookToken=facebookToken)
 
 	@staticmethod
 	def doesFacebookIdExist(facebookId):
@@ -279,33 +277,13 @@ class FacebookModel(UserModel):
 		return mongo.db.users.find_one({'facebookId': facebookId})
 
 	@staticmethod
-	def registerFacebookIdToUserId(userId, facebookId):
+	def linkFacebookIdToUserId(userId, facebookId):
 		"""Register a Facebook account to a user.
 		"""
-		res = False
 		if isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
-		
-		if not FacebookModel.doesFacebookIdExist(facebookId):
-			user = UserModel.getUser(userId)
-			if user and FacebookModel.validateUserIdAndFacebookIdLink(userId, None):
-				res = mongo.db.users.update_one({'_id': userId}, {'facebookId': facebookId}).modified_count == 1
 
-		return res
-
-	@staticmethod
-	def validateUserIdAndFacebookIdLink(userId, facebookId):
-		"""Validate the link between a user and a Facebook account.
-		"""
-		res = False
-		if isinstance(userId, ObjectId):
-			userId = ObjectId(userId)
-		
-		user = UserModel.getUser(userId)
-		if user and user['facebookId'] == facebookId:
-			res = True
-
-		return res
+		return mongo.db.users.update_one({'_id': userId}, {'facebookId': facebookId}).modified_count == 1
 
 class GoogleModel(UserModel):
 
@@ -313,9 +291,7 @@ class GoogleModel(UserModel):
 	def createUserWithGoogle(googleToken):
 		"""Creates a user related to a googleToken.
 		"""
-		if not GoogleModel.doesGoogleIdExist(googleToken['sub']):
-			return UserModel.createUser(googleToken=googleToken)
-		return False
+		return UserModel.createUser(googleToken=googleToken)
 
 	@staticmethod
 	def doesGoogleIdExist(googleId):
@@ -347,27 +323,10 @@ class GoogleModel(UserModel):
 		return mongo.db.users.find_one({'googleId': googleId})
 
 	@staticmethod
-	def registerGoogleIdToUserId(userId, googleId):
+	def linkGoogleIdToUserId(userId, googleId):
 		"""Register a Google account to a user.
 		"""
-		res = False
 		if isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
-		
-		if not GoogleModel.doesGoogleIdExist(googleId):
-			user = UserModel.getUser(userId)
-			if user and GoogleModel.validateUserIdAndGoogleIdLink(userId, None):
-				res = mongo.db.users.update_one({'_id': userId}, {'googleId': googleId}).modified_count == 1
-		
-		return res
 
-	@staticmethod
-	def validateUserIdAndGoogleIdLink(userId, googleId):
-		"""Validate the link between a user and a Google account.
-		"""
-		res = False
-		user = UserModel.getUser(userId)
-		if user and user['googleId'] == googleId:
-			res = True
-
-		return res
+		return mongo.db.users.update_one({'_id': userId}, {'googleId': googleId}).modified_count == 1

@@ -35,7 +35,7 @@ def requireAuthenticate(acceptGuest):
 						g.googleToken = GoogleModel.getTokenValidation(app.config['GOOGLE_CLIENT_ID'], auth.password)
 						if g.googleToken and g.googleToken['sub'] == auth.username:
 							if str(request.url_rule) == '/v1/login' or GoogleModel.doesGoogleIdExist(auth.username):
-								g.loginWith = 'Google'	
+								g.loginWith = 'Google'
 								return f(*args, **kwargs)
 			return abort(401)
 		return decorated_function
@@ -300,12 +300,3 @@ def spottedsByUserId(userId):
 			return Response(json.dumps(res, cls=CustomJSONEncoder))
 
 	return abort(400)
-
-@app.route("/v1/contact", methods=['POST'])
-def contact():
-	form = ContactForm()
-	if form.validate_on_submit():
-		return "{}, {}".format(form.email.data, form.message.data)
-
-	return abort(400)
-
