@@ -13,6 +13,8 @@ from flask import g, abort, request, Response
 
 ALLOW_CROSS_ORIGIN_FROM = ["https://nearbyapp.github.io"]
 
+cors = CORS(app, resources={"/v1/spotteds": {"origins": "https://nearbyapp.github.io"}, "/v1/spotted": {"origins": "https://nearbyapp.github.io"}})
+
 # Decorators
 def requireAuthenticate(acceptGuest):
 	def requireAuth(f):
@@ -217,7 +219,7 @@ def createSpotted():
 	return abort(400)
 
 @app.route("/v1/spotted/<spottedId>", methods=['GET'])
-@allowCrossOrigin
+@cross_origin(origin="https://nearbyapp.github.io")
 @requireAuthenticate(acceptGuest=True)
 def spotted(spottedId):
 	# Returns a specific spotted
@@ -233,7 +235,7 @@ def spotted(spottedId):
 	return abort(400)
 
 @app.route("/v1/spotteds", methods=['GET'])
-@allowCrossOrigin
+@cross_origin(origin="https://nearbyapp.github.io")
 @requireAuthenticate(acceptGuest=True)
 def spotteds():
 	form = GetSpottedsForm(request.args)
