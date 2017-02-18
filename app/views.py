@@ -14,7 +14,7 @@ from flask_cors import CORS, cross_origin
 
 ALLOW_CROSS_ORIGIN_FROM = ["https://nearbyapp.github.io"]
 
-cors = CORS(app, resources={"/v1/spotteds": {"origins": "https://nearbyapp.github.io"}, "/v1/spotted": {"origins": "https://nearbyapp.github.io"}})
+cors = CORS(app)
 
 # Decorators
 def requireAuthenticate(acceptGuest):
