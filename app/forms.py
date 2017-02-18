@@ -22,12 +22,13 @@ def escapeSpecialCharacters(form, field):
 	field.data = cgi.escape(field.data, True)
 
 def validateBoolean(form, field):
-	if field.data.lower() == "true":
-		field.data = True
-	elif field.data.lower() == "false":
-		field.data = False
-	else:
-		raise ValidationError("Anonymity must be true or false.")
+	if not isinstance(field.data, bool):
+		if field.data.lower() == "true":
+			field.data = True
+		elif field.data.lower() == "false":
+			field.data = False
+		else:
+			raise ValidationError("Anonymity must be true or false.")
 
 class ContactForm(FlaskForm):
 	email = StringField('Email', validators=[DataRequired(), Email()])
