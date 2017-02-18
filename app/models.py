@@ -67,7 +67,6 @@ class SpottedModel(object):
 
 		return [spotted for spotted in mongo.db.spotteds.find(
 				{
-					'anonymity': False,
 					'archived': False,
 					'location': {
 						'$geoWithin': {
