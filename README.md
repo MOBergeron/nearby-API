@@ -247,7 +247,11 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   
 *  **URL Params**
 
-    None
+  **Optional:**
+
+  `skip=[integer]`
+
+  `since=[date '%Y-%m-%d %H:%M:%S']`
 
 *  **Headers Params**
 
