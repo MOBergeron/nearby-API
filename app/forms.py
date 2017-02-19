@@ -3,7 +3,7 @@ import cgi
 
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import BooleanField, DecimalField, IntegerField, StringField, TextAreaField
+from wtforms import BooleanField, DateTimeField, DecimalField, IntegerField, StringField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional, ValidationError
 
 # Constants
@@ -40,6 +40,10 @@ class CreateSpottedForm(FlaskForm):
 	longitude = DecimalField('longitude', validators=[DataRequired(), NumberRange(min=MINIMUM_LONGITUDE, max=MAXIMUM_LONGITUDE)])
 	message = TextAreaField('message', validators=[DataRequired(), Length(max=MAXIMUM_SPOTTED_MESSAGE_LENGTH), escapeSpecialCharacters])
 	picture = FileField('picture', validators=[FileAllowed(['jpg','png'])], default=None)
+
+class GetMySpottedsForm(FlaskForm):
+	skip = IntegerField('skip', validators=[NumberRange(min=0)], default=0)
+	since = DateTimeField('since', format='%Y-%m-%d %H:%M:%S', default=None)
 
 class GetSpottedsForm(FlaskForm):
 	minLat = DecimalField('minLat', validators=[DataRequired(), NumberRange(min=MINIMUM_LATITUDE, max=MAXIMUM_LATITUDE)])

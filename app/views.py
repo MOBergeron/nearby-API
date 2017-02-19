@@ -5,7 +5,7 @@ from functools import wraps
 
 from app import app, mongo
 
-from app.forms import ContactForm, CreateSpottedForm, GetSpottedsForm, MergeFacebookForm, MergeGoogleForm, LinkFacebookForm, LinkGoogleForm
+from app.forms import ContactForm, CreateSpottedForm, GetMySpottedsForm, GetSpottedsForm, MergeFacebookForm, MergeGoogleForm, LinkFacebookForm, LinkGoogleForm
 from app.models import SpottedModel, UserModel, FacebookModel, GoogleModel
 from app.utils import CustomJSONEncoder, validateObjectId
 
@@ -254,13 +254,18 @@ def spotteds():
 @app.route("/v1/spotteds/<userId>", methods=['GET'])
 @requireAuthenticate(acceptGuest=False)
 def spottedsByUserId(userId):
+	form = GetMySpottedsForm(request.args)
+	
 	# Returns all spotteds to a specific userId
-	if userId and (validateObjectId(userId) or userId == 'me'):
+	if form.validate() and userId and (validateObjectId(userId) or userId == 'me'):
+		skip = form.skip.data
+		since = form.since.data
+		
 		res = None
 		if userId == 'me':
-			res = SpottedModel.getMySpotteds(g.currentUser['_id'])
+			res = SpottedModel.getMySpotteds(g.currentUser['_id'], skip=skip, since=since)
 		elif str(g.currentUser['_id'])  == userId:
-			res = SpottedModel.getMySpotteds(userId)
+			res = SpottedModel.getMySpotteds(userId, skip=skip, since=since)
 		else:
 			res = SpottedModel.getSpottedsByUserId(userId)
 

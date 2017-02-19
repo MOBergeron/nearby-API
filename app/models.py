@@ -93,7 +93,8 @@ class SpottedModel(object):
 				},
 				limit=200,
 				projection=projection,
-			).sort('creationDate', DESCENDING)
+				sort=[('creationDate', DESCENDING)]
+			)
 		]
 
 		if not locationOnly:
@@ -104,13 +105,21 @@ class SpottedModel(object):
 		return spotteds
 		
 	@staticmethod
-	def getMySpotteds(userId):
+	def getMySpotteds(userId, skip=None, since=None):
 		"""Gets a list of spotteds by using the userId of a specific user.
 		"""
 		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
 		
-		return [spotted for spotted in mongo.db.spotteds.find({'userId': userId}, limit=20, projection={'archived': False}).sort('creationDate', DESCENDING)]
+		if skip is None:
+			skip = 0
+
+		if since:
+			spotteds = [spotted for spotted in mongo.db.spotteds.find({'userId': userId, 'creationDate': {'$gte': since}}, skip=skip, limit=20, projection={'archived': False}, sort=[('creationDate', DESCENDING)])]
+		else:
+			spotteds = [spotted for spotted in mongo.db.spotteds.find({'userId': userId}, skip=skip, limit=20, projection={'archived': False}, sort=[('creationDate', DESCENDING)])]
+
+		return spotteds
 
 	@staticmethod
 	def getSpottedsByUserId(userId):
@@ -119,7 +128,7 @@ class SpottedModel(object):
 		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
 		
-		spotteds = [spotted for spotted in mongo.db.spotteds.find({'userId': userId, 'anonymity': False, 'archived': False}, limit=20, projection={'archived': False}).sort('creationDate', DESCENDING)]
+		spotteds = [spotted for spotted in mongo.db.spotteds.find({'userId': userId, 'anonymity': False, 'archived': False}, limit=20, projection={'archived': False}, sort=[('creationDate', DESCENDING)])]
 		
 		for spotted in spotteds:
 			if spotted['anonymity']:
