@@ -254,18 +254,19 @@ def spotteds():
 @app.route("/v1/spotteds/<userId>", methods=['GET'])
 @requireAuthenticate(acceptGuest=False)
 def spottedsByUserId(userId):
-	form = GetMySpottedsForm(request.args)
 	
 	# Returns all spotteds to a specific userId
-	if form.validate() and userId and (validateObjectId(userId) or userId == 'me'):
-		skip = form.skip.data
-		since = form.since.data
+	if userId and (validateObjectId(userId) or userId == 'me'):
 		
 		res = None
 		if userId == 'me':
-			res = SpottedModel.getMySpotteds(g.currentUser['_id'], skip=skip, since=since)
+			form = GetMySpottedsForm(request.args)
+			if form.validate():
+				skip = form.skip.data
+				since = form.since.data
+				res = SpottedModel.getMySpotteds(g.currentUser['_id'], skip=skip, since=since)
 		elif str(g.currentUser['_id'])  == userId:
-			res = SpottedModel.getMySpotteds(userId, skip=skip, since=since)
+			res = SpottedModel.getMySpotteds(userId)
 		else:
 			res = SpottedModel.getSpottedsByUserId(userId)
 
