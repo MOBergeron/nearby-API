@@ -104,7 +104,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
    },
    "message":"Y0l0",
    "fullName":"Marc Grenier",
-   "profilPictureURL":"https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/15822655_10154966769969571_1156185999583138092_n.jpg?oh=9b6519cd03d8ca97e10538623fb19d95&oe=593BF8D9"
+   "profilePictureURL":"https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/15822655_10154966769969571_1156185999583138092_n.jpg?oh=9b6519cd03d8ca97e10538623fb19d95&oe=593BF8D9"
 }
 ```
   * **Meaning:** A spotted object is returned.
