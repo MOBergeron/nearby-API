@@ -12,7 +12,7 @@ from app.s3connection import S3Connection
 class SpottedModel(object):
 
 	@staticmethod
-	def createSpotted(userId, anonymity, latitude, longitude, message, picture=None):
+	def createSpotted(userId, anonymity, longitude, latitude, message, picture=None):
 		"""Creates a spotted.
 		"""
 		pictureURL = None
@@ -30,8 +30,8 @@ class SpottedModel(object):
 				'location': {
 					'type':'Point',
 					'coordinates': [
-						float(latitude), 
-						float(longitude)
+						float(longitude),
+						float(latitude)
 					]
 				},
 				'creationDate': datetime.datetime.utcnow(),
@@ -44,13 +44,18 @@ class SpottedModel(object):
 	def getSpottedBySpottedId(spottedId):
 		"""Gets a spotted by spottedId.
 		"""
-		if isinstance(spottedId, ObjectId):
+		if not isinstance(spottedId, ObjectId):
 			spottedId = ObjectId(spottedId)
 		
-		return mongo.db.spotteds.find_one({'_id': spottedId, 'archived': False}, projection={'archived': False})
+		spotted = mongo.db.spotteds.find_one({'_id': spottedId, 'archived': False}, projection={'archived': False})
+
+		if spotted['anonymity']:
+			spotted['userId'] = None
+		
+		return spotted
 
 	@staticmethod
-	def getSpotteds(minLat, minLong, maxLat, maxLong, locationOnly):
+	def getSpotteds(minLong, minLat, maxLong, maxLat, locationOnly):
 		"""Gets a list of spotteds by using the latitude, longitude and radius.
 		locationOnly returns only get the location of the returned spotteds if true.
 		"""
@@ -65,7 +70,7 @@ class SpottedModel(object):
 			projection['message'] = True
 			projection['userId'] = True
 
-		return [spotted for spotted in mongo.db.spotteds.find(
+		spotteds = [spotted for spotted in mongo.db.spotteds.find(
 				{
 					'archived': False,
 					'location': {
@@ -74,11 +79,11 @@ class SpottedModel(object):
 								'type': 'Polygon',
 								'coordinates': [
 									[
-										[float(minLat), float(minLong)],
-										[float(minLat), float(maxLong)],
-										[float(maxLat), float(maxLong)],
-										[float(maxLat), float(minLong)],
-										[float(minLat), float(minLong)]
+										[float(minLong), float(minLat)],
+										[float(minLong), float(maxLat)],
+										[float(maxLong), float(maxLat)],
+										[float(maxLong), float(minLat)],
+										[float(minLong), float(minLat)]
 									]
 								]
 							}
@@ -89,25 +94,36 @@ class SpottedModel(object):
 				projection=projection
 			)
 		]
+
+		for spotted in spotteds:
+			if spotted['anonymity']:
+				spotted['userId'] = None
+
+		return spotteds
 		
 	@staticmethod
 	def getMySpotteds(userId):
 		"""Gets a list of spotteds by using the userId of a specific user.
 		"""
-		if isinstance(userId, ObjectId):
+		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
 		
-		return [x for x in mongo.db.spotteds.find({'userId': userId}, limit=20, projection={'archived': False})]
+		return [spotted for spotted in mongo.db.spotteds.find({'userId': userId}, limit=20, projection={'archived': False})]
 
 	@staticmethod
 	def getSpottedsByUserId(userId):
 		"""Gets a list of spotteds by using the userId of a specific user.
 		"""
-		if isinstance(userId, ObjectId):
+		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
 		
-		res = [x for x in mongo.db.spotteds.find({'userId': userId, 'anonymity': False, 'archived': False}, limit=20, projection={'archived': False})]
-		return res
+		spotteds = [spotted for spotted in mongo.db.spotteds.find({'userId': userId, 'anonymity': False, 'archived': False}, limit=20, projection={'archived': False})]
+		
+		for spotted in spotteds:
+			if spotted['anonymity']:
+				spotted['userId'] = None
+
+		return spotteds
 
 class UserModel(object):
 
@@ -156,7 +172,7 @@ class UserModel(object):
 	@staticmethod
 	def _disableUser(userId, disabled):
 		res = False
-		if isinstance(userId, ObjectId):
+		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
 
 		if mongo.db.users.update_one({'_id': userId}, {'$set': {'disabled': disabled}}).modified_count == 1:
@@ -169,8 +185,8 @@ class UserModel(object):
 		return res
 
 	@staticmethod
-	def _getUser(filters):
-		return mongo.db.users.find_one(filters)
+	def _getUser(filters, projection={}):
+		return mongo.db.users.find_one(filters, projection=projection)
 
 	@staticmethod
 	def _isDisabled(filters):
@@ -183,61 +199,64 @@ class UserModel(object):
 		return res
 
 	@staticmethod
-	def _linkToUserId(userId, filters):
-		if isinstance(userId, ObjectId):
+	def _linkToUserId(userId, replace):
+		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
 
-		return mongo.db.users.update_one({'_id': userId}, filters).modified_count == 1
+		return mongo.db.users.update_one({'_id': userId}, replace).modified_count == 1
 
 	@staticmethod
 	def disableUser(userId):
 		"""Disable a user
 		"""
-		return UserModel._disableUser(userId, True)
+		return UserModel._disableUser(userId=userId, disable=True)
 
 	@staticmethod
 	def doesUserExist(userId):
 		"""Checks if a user exists by userId.
 		"""
-		return True if UserModel.getUser(userId) else False
+		return True if UserModel.getUser(userId=userId) else False
 
 	@staticmethod
 	def enableUser(userId):
 		"""Enable a user
 		"""
-		return UserModel._disableUser(userId, False)
+		return UserModel._disableUser(userId=userId, disable=False)
 
 	@staticmethod
-	def getUser(userId):
+	def getUser(userId, publicInfo=False):
 		"""Gets a user by userId.
 		"""
-		if isinstance(userId, ObjectId):
+		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
 
-		return UserModel._getUser({'_id': userId})
+		if publicInfo:
+			projection={'_id': 0, 'profilPictureURL': 1, 'fullName': 1}
+
+		return UserModel._getUser(filters={'_id': userId}, projection=projection)
 
 	@staticmethod
 	def isDisabled(userId):
 		"""Check if a user is disabled
 		"""
-		if isinstance(userId, ObjectId):
+		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
 
-		return UserModel._isDisabled({'_id': userId})
+		return UserModel._isDisabled(filters={'_id': userId})
 
 	@staticmethod
 	def mergeUsers(primaryUserId, userIdToMerge):
 		"""Merge a Nearby account to another Nearby account with different service providers
 		"""
 		res = False
-		if isinstance(primaryUserId, ObjectId):
+		if not isinstance(primaryUserId, ObjectId):
 			primaryUserId = ObjectId(primaryUserId)
 
-		if isinstance(userIdToMerge, ObjectId):
+		if not isinstance(userIdToMerge, ObjectId):
 			userIdToMerge = ObjectId(userIdToMerge)
 
-		userToMerge = UserModel.getUser(primaryUserId)
-		primaryUser = UserModel.getUser(userIdToMerge)
+		userToMerge = UserModel.getUser(userId=primaryUserId)
+		primaryUser = UserModel.getUser(userId=userIdToMerge)
 
 		if userToMerge and primaryUser \
 		and (not userToMerge['facebookId'] and primaryUser['facebookId'] and not primaryUser['googleId'] \
@@ -268,7 +287,7 @@ class FacebookModel(UserModel):
 	def doesUserExist(facebookId):
 		"""Checks if a user exists by facebookId.
 		"""
-		return True if FacebookModel.getUser(facebookId) else False
+		return True if FacebookModel.getUser(facebookId=facebookId) else False
 
 	@staticmethod
 	def getTokenValidation(accessToken, token):
@@ -284,19 +303,19 @@ class FacebookModel(UserModel):
 	def getUser(facebookId):
 		"""Gets a user by facebookId.
 		"""
-		return UserModel._getUser({'facebookId': facebookId})
+		return UserModel._getUser(filters={'facebookId': facebookId})
 
 	@staticmethod
 	def isDisabled(facebookId):
 		"""Check if a Facebook user is disabled
 		"""
-		return UserModel._isDisabled({'facebookId': facebookId})
+		return UserModel._isDisabled(filters={'facebookId': facebookId})
 
 	@staticmethod
 	def linkToUserId(userId, facebookId):
 		"""Register a Facebook account to a user.
 		"""
-		return UserModel._linkToUserId(userId, {'facebookId': facebookId})
+		return UserModel._linkToUserId(userId=userId, replace={'facebookId': facebookId})
 
 class GoogleModel(UserModel):
 
@@ -310,7 +329,7 @@ class GoogleModel(UserModel):
 	def doesUserExist(googleId):
 		"""Checks if a user exists by googleId.
 		"""
-		return True if GoogleModel.getUser(googleId) else False
+		return True if GoogleModel.getUser(googleId=googleId) else False
 
 	@staticmethod
 	def getTokenValidation(clientId, token):
@@ -333,16 +352,16 @@ class GoogleModel(UserModel):
 	def getUser(googleId):
 		"""Gets a user by googleId.
 		"""
-		return UserModel._getUser({'googleId': googleId})
+		return UserModel._getUser(filters={'googleId': googleId})
 
 	@staticmethod
 	def isDisabled(googleId):
 		"""Check if a Google user is disabled
 		"""
-		return UserModel._isDisabled({'googleId': googleId})
+		return UserModel._isDisabled(filters={'googleId': googleId})
 
 	@staticmethod
 	def linkToUserId(userId, googleId):
 		"""Register a Google account to a user.
 		"""
-		return UserModel._linkToUserId(userId, {'googleId': googleId})
+		return UserModel._linkToUserId(userId=userId, replace={'googleId': googleId})

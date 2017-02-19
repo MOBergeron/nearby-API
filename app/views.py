@@ -67,35 +67,23 @@ def methodNotAllowed(e):
 def internalServerError(e):
 	return Response(json.dumps({'error':'Internal Server Error'}), status=500, mimetype="application/json")
 
-@app.route("/v1/login", methods=['POST'])
+@app.route("/v1/spotted", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
-def loginFacebook():
-	if g.loginWith == 'Facebook':
-		if not FacebookModel.doesUserExist(request.authorization.username):
-			if FacebookModel.createUser(g.facebookToken):
-				return json.dumps({'result':'Created'}), 201
+def createSpotted():
+	form = CreateSpottedForm()
+	
+	# Creates a spotted according to form data
+	if form.validate():
+		anonymity = form.anonymity.data
+		longitude = form.longitude.data
+		latitude = form.latitude.data
+		message = form.message.data
+		picture = form.picture.data
 
-		elif FacebookModel.isDisabled(request.authorization.username):
-			user = FacebookModel.getUser(request.authorization.username)
-			if user:
-				if UserModel.enableUser(user['_id']):
-					return json.dumps({'result':'OK'}), 200
-		else:
-			return json.dumps({'result':'OK'}), 200
+		res = SpottedModel.createSpotted(userId=g.currentUser['_id'], anonymity=anonymity, longitude=longitude, latitude=latitude, message=message, picture=picture)
+		if res:
+			return Response(json.dumps({'result': res}, cls=CustomJSONEncoder), status=201, mimetype="application/json")
 
-	elif g.loginWith == 'Google':
-		if not GoogleModel.doesUserExist(request.authorization.username):
-			if GoogleModel.createUser(g.googleToken):
-				return json.dumps({'result':'Created'}), 201
-
-		elif GoogleModel.isDisabled(request.authorization.username):
-			user = GoogleModel.getUser(request.authorization.username)
-			if user:
-				if UserModel.enableUser(user['_id']):
-					return json.dumps({'result':'OK'}), 200
-		else:
-			return json.dumps({'result':'OK'}), 200
-		
 	return abort(400)
 
 @app.route("/v1/disable", methods=['POST'])
@@ -103,42 +91,6 @@ def loginFacebook():
 def disableAccount():
 	if UserModel.disableUser(g.currentUser['_id']):
 		return json.dumps({'result':'OK'}), 200
-
-	return abort(400)
-
-@app.route("/v1/merge/facebook", methods=['POST'])
-@requireAuthenticate(acceptGuest=False)
-def mergeFacebook():
-	"""Merges an existing Facebook account to an existing Google account.
-	"""
-	form = MergeFacebookForm()
-	# Check if the Service-Provider is Google
-	if form.validate_on_submit() and g.loginWith == 'Google' and g.currentUser['facebookId'] is None:
-		facebookToken = FacebookModel.getTokenValidation(app.config['FACEBOOK_ACCESS_TOKEN'], form.token.data)
-		if facebookToken['is_valid'] and facebookToken['user_id'] == form.facebookId.data:
-			# Continue only if the account does exist.
-			if FacebookModel.doesUserExist(form.facebookId.data):
-				facebookUser = FacebookModel.getUser(form.facebookId.data)
-				if UserModel.mergeUsers(g.currentUser['_id'], facebookUser['_id']):
-					return json.dumps({'result':'OK'}), 200
-
-	return abort(400)
-
-@app.route("/v1/merge/google", methods=['POST'])
-@requireAuthenticate(acceptGuest=False)
-def mergeGoogle():
-	"""Merges an existing Google account to an existing Facebook account.
-	"""
-	form = MergeGoogleForm()
-	# Check if the Service-Provider is Facebook
-	if form.validate_on_submit() and g.loginWith == 'Facebook' and g.currentUser['googleId'] is None:
-		googleToken = GoogleModel.getTokenValidation(app.config['GOOGLE_CLIENT_ID'], form.token.data)
-		if googleToken and googleToken['sub'] == form.googleId.data:
-			# Continue only if the account does exist.
-			if GoogleModel.doesUserExist(form.googleId.data):
-				googleUser = GoogleModel.getUser(form.googleId.data)
-				if UserModel.mergeUsers(g.currentUser['_id'], googleUser['_id']):
-					return json.dumps({'result':'OK'}), 200
 
 	return abort(400)
 
@@ -184,22 +136,70 @@ def linkGoogle():
 
 	return abort(400)
 
-@app.route("/v1/spotted", methods=['POST'])
+@app.route("/v1/login", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
-def createSpotted():
-	form = CreateSpottedForm()
-	
-	# Creates a spotted according to form data
-	if form.validate():
-		anonymity = form.anonymity.data
-		longitude = form.longitude.data
-		latitude = form.latitude.data
-		message = form.message.data
-		picture = form.picture.data
+def loginFacebook():
+	if g.loginWith == 'Facebook':
+		if not FacebookModel.doesUserExist(request.authorization.username):
+			if FacebookModel.createUser(g.facebookToken):
+				return json.dumps({'result':'Created'}), 201
 
-		res = SpottedModel.createSpotted(userId=g.currentUser['_id'], anonymity=anonymity, latitude=latitude, longitude=longitude, message=message, picture=picture)
-		if res:
-			return Response(json.dumps({'result': res}, cls=CustomJSONEncoder), status=201, mimetype="application/json")
+		elif FacebookModel.isDisabled(request.authorization.username):
+			user = FacebookModel.getUser(request.authorization.username)
+			if user:
+				if UserModel.enableUser(user['_id']):
+					return json.dumps({'result':'OK'}), 200
+		else:
+			return json.dumps({'result':'OK'}), 200
+
+	elif g.loginWith == 'Google':
+		if not GoogleModel.doesUserExist(request.authorization.username):
+			if GoogleModel.createUser(g.googleToken):
+				return json.dumps({'result':'Created'}), 201
+
+		elif GoogleModel.isDisabled(request.authorization.username):
+			user = GoogleModel.getUser(request.authorization.username)
+			if user:
+				if UserModel.enableUser(user['_id']):
+					return json.dumps({'result':'OK'}), 200
+		else:
+			return json.dumps({'result':'OK'}), 200
+		
+	return abort(400)
+
+@app.route("/v1/merge/facebook", methods=['POST'])
+@requireAuthenticate(acceptGuest=False)
+def mergeFacebook():
+	"""Merges an existing Facebook account to an existing Google account.
+	"""
+	form = MergeFacebookForm()
+	# Check if the Service-Provider is Google
+	if form.validate_on_submit() and g.loginWith == 'Google' and g.currentUser['facebookId'] is None:
+		facebookToken = FacebookModel.getTokenValidation(app.config['FACEBOOK_ACCESS_TOKEN'], form.token.data)
+		if facebookToken['is_valid'] and facebookToken['user_id'] == form.facebookId.data:
+			# Continue only if the account does exist.
+			if FacebookModel.doesUserExist(form.facebookId.data):
+				facebookUser = FacebookModel.getUser(form.facebookId.data)
+				if UserModel.mergeUsers(g.currentUser['_id'], facebookUser['_id']):
+					return json.dumps({'result':'OK'}), 200
+
+	return abort(400)
+
+@app.route("/v1/merge/google", methods=['POST'])
+@requireAuthenticate(acceptGuest=False)
+def mergeGoogle():
+	"""Merges an existing Google account to an existing Facebook account.
+	"""
+	form = MergeGoogleForm()
+	# Check if the Service-Provider is Facebook
+	if form.validate_on_submit() and g.loginWith == 'Facebook' and g.currentUser['googleId'] is None:
+		googleToken = GoogleModel.getTokenValidation(app.config['GOOGLE_CLIENT_ID'], form.token.data)
+		if googleToken and googleToken['sub'] == form.googleId.data:
+			# Continue only if the account does exist.
+			if GoogleModel.doesUserExist(form.googleId.data):
+				googleUser = GoogleModel.getUser(form.googleId.data)
+				if UserModel.mergeUsers(g.currentUser['_id'], googleUser['_id']):
+					return json.dumps({'result':'OK'}), 200
 
 	return abort(400)
 
@@ -212,7 +212,7 @@ def spotted(spottedId):
 		if validateObjectId(spottedId):
 			res = SpottedModel.getSpottedBySpottedId(spottedId)
 			if res:
-				response = Response(json.dumps(res, cls=CustomJSONEncoder))
+				response = Response(json.dumps(res, cls=CustomJSONEncoder), status=200, mimetype="application/json")
 				return response
 			else:
 				return abort(404)
@@ -235,9 +235,9 @@ def spotteds():
 
 		# If locationOnly is True, returns only the locations for all the spotteds.
 		# Else, returns all spotteds with their whole data.
-		res = SpottedModel.getSpotteds(minLat=minLat, maxLat=maxLat, minLong=minLong, maxLong=maxLong, locationOnly=locationOnly)
+		res = SpottedModel.getSpotteds(minLong=minLong, minLat=minLat, maxLong=maxLong, maxLat=maxLat, locationOnly=locationOnly)
 		if type(res) == list:
-			response = Response(json.dumps(res, cls=CustomJSONEncoder))
+			response = Response(json.dumps(res, cls=CustomJSONEncoder), status=200, mimetype="application/json")
 			return response
 
 	return abort(400)
@@ -247,7 +247,7 @@ def spotteds():
 def spottedsByUserId(userId):
 	# Returns all spotteds to a specific userId
 	if userId and (validateObjectId(userId) or userId == 'me'):
-		res = False
+		res = None
 		if userId == 'me':
 			res = SpottedModel.getMySpotteds(g.currentUser['_id'])
 		elif str(g.currentUser['_id'])  == userId:
@@ -256,6 +256,18 @@ def spottedsByUserId(userId):
 			res = SpottedModel.getSpottedsByUserId(userId)
 
 		if type(res) == list:
-			return Response(json.dumps(res, cls=CustomJSONEncoder))
+			return Response(json.dumps(res, cls=CustomJSONEncoder), status=200, mimetype="application/json")
+
+	return abort(400)
+
+@app.route("/v1/user/<userId>", methods=['GET'])
+@cross_origin(origin='*')
+@requireAuthenticate(acceptGuest=True)
+def userByUserId(userId):
+	if userId and validateObjectId(userId):
+		res = UserModel.getUser(userId, publicInfo=True)
+
+		if res:
+			return Response(json.dumps(res, cls=CustomJSONEncoder), status=200, mimetype="application/json")
 
 	return abort(400)
