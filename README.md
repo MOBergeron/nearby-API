@@ -11,7 +11,7 @@
     - [Get my Spotteds] (#get-my-spotteds)
     - [Get Spotteds by user ID] (#get-spotteds-by-user-id)
   - POST
-    - [Authentication] (#authentication)
+    - [Create Account and Authentication] (#create-account-and-authentication)
     - [Create a spotted] (#create-a-spotted)
     - [Link Facebook] (#link-facebook)
     - [Link Google] (#link-google)
@@ -387,7 +387,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Meaning:** The {userId} was not UUID validated.
 
 ##POST
-###Authentication
+###Create Account and Authentication
 ----
   This is the main call to be able to authenticate with the API.
 
