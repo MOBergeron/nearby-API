@@ -142,43 +142,33 @@ class UserModel(object):
 
 	@staticmethod
 	def _createUser(facebookToken=None, googleToken=None):
-		facebookId = None
-		googleId = None
-		facebookDate = None
-		googleDate = None
-		fullName = None
-		profilePictureURL = None
-
-		if not facebookToken == None:
-			facebookId = facebookToken['user_id']
-			url = "https://graph.facebook.com/{facebookId}?fields=name,picture&access_token={accessToken}"
-			res = urllib2.urlopen(url.format(facebookId=facebookId,accessToken=facebookToken['token']))
-			data = json.loads(res.read())
-			profilePictureURL = data['picture']['data']['url']
-			fullName = data['name']
-			facebookDate = datetime.datetime.utcnow()
-		
-		if not googleToken == None:
-			googleId = googleToken['sub']
-			profilePictureURL = googleToken['picture']
-			fullName = googleToken['name']
-			googleDate = datetime.datetime.utcnow()
-
 		userId = False
 
-		if facebookId or googleId:
-			userId = mongo.db.users.insert_one(
-				{
-					'facebookId': facebookId,
-					'googleId': googleId,
-					'fullName': fullName,
-					'profilePictureURL': profilePictureURL,
-					'disabled': False,
-					'creationDate' : datetime.datetime.utcnow(),
-					'facebookDate' : facebookDate,
-					'googleDate' : googleDate,
-				}
-			).inserted_id
+		if not facebookToken or not googleToken:
+			creationDate = datetime.datetime.utcnow()
+
+			insert = {
+				'disabled': False,
+				'creationDate' : creationDate
+			}
+
+			if not facebookToken is None:
+				insert['facebookDate'] = creationDate
+				insert['facebookId'] = facebookToken['user_id']
+				url = "https://graph.facebook.com/{facebookId}?fields=name,picture&access_token={accessToken}"
+				res = urllib2.urlopen(url.format(facebookId=insert['facebookId'],accessToken=facebookToken['token']))
+				data = json.loads(res.read())
+				insert['profilePictureURL'] = data['picture']['data']['url']
+				insert['fullName'] = data['name']
+			
+			if not googleToken is None:
+				insert['googleDate'] = creationDate
+				insert['googleId'] = googleToken['sub']
+				insert['profilePictureURL'] = googleToken['picture']
+				insert['fullName'] = googleToken['name']
+
+			if 'facebookId' in insert or 'googleId' in insert:
+				userId = mongo.db.users.insert_one(insert).inserted_id
 
 		return userId
 
