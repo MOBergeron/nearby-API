@@ -91,19 +91,20 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** 
 ```json
 {
-    "_id": "58a6267ce66036254c9518f8",
-    "anonymity": true,
-    "userId": "58a6044be66036180128f034",
-    "location": {
-        "type": "Point",
-        "coordinates": [
-            70,
-            70
-        ]
-    },
-    "creationDate": "2017-02-17T05:05:16.930000+00:00",
-    "pictureURL": "https://s3.ca-central-1.amazonaws.com/spottednearby/41c8f63a-3f61-44d1-9d7a-ff3638f6c292.jpg",
-    "message": "Lorem Ipsum"
+   "_id":"58a8dac79cfcc62fc0a94883",
+   "creationDate":"2017-02-18T23:37:43.690000+00:00",
+   "userId":"58a6044be66036180128f034",
+   "pictureURL":null,
+   "location":{
+      "type":"Point",
+      "coordinates":[
+         45.5578415,
+         -73.5515155
+      ]
+   },
+   "message":"Y0l0",
+   "fullName":"Marc Grenier",
+   "profilePictureURL":"https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/15822655_10154966769969571_1156185999583138092_n.jpg?oh=9b6519cd03d8ca97e10538623fb19d95&oe=593BF8D9"
 }
 ```
   * **Meaning:** A spotted object is returned.
@@ -163,9 +164,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Code:** 200
   * **Content:** 
 ```json
+// Note userId is null when anonym is True
 [{
     "_id": "58a6267ce66036254c9518f8",
-    "anonymity": true,
     "userId": "58a6044be66036180128f034",
     "location": {
         "type": "Point",
@@ -178,8 +179,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
     "message": "Lorem Ipsum1"
 }, {
     "_id": "58a6267ce66036254c9518f8",
-    "anonymity": false,
-    "userId": "58a6044be66036180128f034",
+    "userId": "None",
     "location": {
         "type": "Point",
         "coordinates": [
@@ -190,6 +190,29 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
     "creationDate": "2017-02-17T05:05:16.930000+00:00",
     "pictureURL": "https://s3.ca-central-1.amazonaws.com/spottednearby/41c8f63a-3f61-44d1-9d7a-ff3638f6c292.jpg",
     "message": "Lorem Ipsum2"
+}]
+```
+
+```json
+// locationOnly is True
+[{
+    "_id": "58a6267ce66036254c9518f8",
+    "location": {
+        "type": "Point",
+        "coordinates": [
+            70,
+            70
+        ]
+    },
+}, {
+    "_id": "58a6267ce66036254c9518f8",
+    "location": {
+        "type": "Point",
+        "coordinates": [
+            70,
+            70
+        ]
+    },
 }]
 ```
   * **Meaning:** A list of spotted object is returned.
@@ -235,7 +258,6 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 ```json
 [{
     "_id": "58a6267ce66036254c9518f8",
-    "anonymity": true,
     "userId": "58a6044be66036180128f034",
     "location": {
         "type": "Point",
@@ -249,7 +271,6 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
     "message": "Lorem Ipsum1"
 }, {
     "_id": "58a6267ce66036254c9518f8",
-    "anonymity": false,
     "userId": "58a6044be66036180128f034",
     "location": {
         "type": "Point",
@@ -310,9 +331,9 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Code:** 200
   * **Content:** 
 ```json
+// Note userId is null when anonym is True
 [{
     "_id": "58a6267ce66036254c9518f8",
-    "anonymity": true,
     "userId": "58a6044be66036180128f034",
     "location": {
         "type": "Point",
@@ -326,8 +347,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
     "message": "Lorem Ipsum1"
 }, {
     "_id": "58a6267ce66036254c9518f8",
-    "anonymity": false,
-    "userId": "58a6044be66036180128f034",
+    "userId": null,
     "location": {
         "type": "Point",
         "coordinates": [
