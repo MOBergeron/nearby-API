@@ -37,8 +37,9 @@ def requireAuthenticate(acceptGuest):
 							g.loginWith = 'Google'
 					
 					if g.loginWith and (str(request.url_rule) == '/v1/login' or g.currentUser):
-						return f(*args, **kwargs)
-
+						if str(request.url_rule) == '/v1/login' or not g.currentUser['disabled']:
+							return f(*args, **kwargs)
+						return abort(410)
 			return abort(401)
 		return decorated_function
 	return requireAuth
@@ -62,6 +63,10 @@ def notFound(e):
 @app.errorhandler(405)
 def methodNotAllowed(e):
 	return Response(json.dumps({'error':'Method Not Allowed'}), status=405, mimetype="application/json")
+
+@app.errorhandler(410)
+def gone(e):
+	return Response(json.dumps({'error':'Gone'}), status=410, mimetype="application/json")
 
 @app.errorhandler(500)
 def internalServerError(e):

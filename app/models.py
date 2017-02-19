@@ -49,7 +49,7 @@ class SpottedModel(object):
 		
 		spotted = mongo.db.spotteds.find_one({'_id': spottedId, 'archived': False}, projection={'archived': False})
 
-		if spotted['anonymity']:
+		if spotted and spotted['anonymity']:
 			spotted['userId'] = None
 		
 		return spotted
@@ -186,7 +186,7 @@ class UserModel(object):
 		return res
 
 	@staticmethod
-	def _getUser(filters, projection={}):
+	def _getUser(filters, projection=None):
 		return mongo.db.users.find_one(filters, projection=projection)
 
 	@staticmethod
@@ -210,7 +210,7 @@ class UserModel(object):
 	def disableUser(userId):
 		"""Disable a user
 		"""
-		return UserModel._disableUser(userId=userId, disable=True)
+		return UserModel._disableUser(userId=userId, disabled=True)
 
 	@staticmethod
 	def doesUserExist(userId):
@@ -222,7 +222,7 @@ class UserModel(object):
 	def enableUser(userId):
 		"""Enable a user
 		"""
-		return UserModel._disableUser(userId=userId, disable=False)
+		return UserModel._disableUser(userId=userId, disabled=False)
 
 	@staticmethod
 	def getUser(userId, publicInfo=False):
