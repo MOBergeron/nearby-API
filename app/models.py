@@ -4,6 +4,7 @@ import urllib2
 import datetime
 
 from bson import ObjectId
+from flask_pymongo import DESCENDING
 from oauth2client import client, crypt
 
 from app import mongo
@@ -62,11 +63,11 @@ class SpottedModel(object):
 		projection = {}
 		projection['_id'] = True
 		projection['location'] = True
+		projection['creationDate'] = True
 
 		if not locationOnly:
 			projection['anonymity'] = True
 			projection['archived'] = True
-			projection['creationDate'] = True
 			projection['message'] = True
 			projection['userId'] = True
 
@@ -91,8 +92,8 @@ class SpottedModel(object):
 					}
 				},
 				limit=200,
-				projection=projection
-			)
+				projection=projection,
+			).sort('creationDate', DESCENDING)
 		]
 
 		if not locationOnly:
@@ -109,7 +110,7 @@ class SpottedModel(object):
 		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
 		
-		return [spotted for spotted in mongo.db.spotteds.find({'userId': userId}, limit=20, projection={'archived': False})]
+		return [spotted for spotted in mongo.db.spotteds.find({'userId': userId}, limit=20, projection={'archived': False}).sort('creationDate', DESCENDING)]
 
 	@staticmethod
 	def getSpottedsByUserId(userId):
@@ -118,7 +119,7 @@ class SpottedModel(object):
 		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
 		
-		spotteds = [spotted for spotted in mongo.db.spotteds.find({'userId': userId, 'anonymity': False, 'archived': False}, limit=20, projection={'archived': False})]
+		spotteds = [spotted for spotted in mongo.db.spotteds.find({'userId': userId, 'anonymity': False, 'archived': False}, limit=20, projection={'archived': False}).sort('creationDate', DESCENDING)]
 		
 		for spotted in spotteds:
 			if spotted['anonymity']:
