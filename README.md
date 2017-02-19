@@ -52,6 +52,12 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   OR
   
+  * **Code:** 410 GONE
+  * **Content:** `{"error" : "Gone"}`
+  * **Meaning:** Your Nearby account has been disabled. Login to enable it again.
+
+  OR
+  
   * **Code:** 500 INTERNAL SERVER ERROR
   * **Content:** `{"error" : "Internal Server Error"}`
   * **Meaning:** Something went wrong in the server. Sorry about that.<br />
