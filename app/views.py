@@ -208,14 +208,18 @@ def mergeGoogle():
 @requireAuthenticate(acceptGuest=True)
 def spotted(spottedId):
 	# Returns a specific spotted
-	if spottedId:
-		if validateObjectId(spottedId):
-			res = SpottedModel.getSpottedBySpottedId(spottedId)
-			if res:
-				response = Response(json.dumps(res, cls=CustomJSONEncoder), status=200, mimetype="application/json")
-				return response
-			else:
-				return abort(404)
+	if spottedId and validateObjectId(spottedId):
+		spotted = SpottedModel.getSpottedBySpottedId(spottedId)
+		if spotted:
+			if not spotted['anonymity']:
+				user = UserModel.getUser(spotted['userId'], publicInfo=True)
+				if user:
+					spotted.update(user)
+
+			response = Response(json.dumps(spotted, cls=CustomJSONEncoder), status=200, mimetype="application/json")
+			return response
+		else:
+			return abort(404)
 
 	return abort(400)
 
@@ -256,18 +260,6 @@ def spottedsByUserId(userId):
 			res = SpottedModel.getSpottedsByUserId(userId)
 
 		if type(res) == list:
-			return Response(json.dumps(res, cls=CustomJSONEncoder), status=200, mimetype="application/json")
-
-	return abort(400)
-
-@app.route("/v1/user/<userId>", methods=['GET'])
-@cross_origin(origin='*')
-@requireAuthenticate(acceptGuest=True)
-def userByUserId(userId):
-	if userId and validateObjectId(userId):
-		res = UserModel.getUser(userId, publicInfo=True)
-
-		if res:
 			return Response(json.dumps(res, cls=CustomJSONEncoder), status=200, mimetype="application/json")
 
 	return abort(400)
