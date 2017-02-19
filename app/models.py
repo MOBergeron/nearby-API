@@ -95,9 +95,10 @@ class SpottedModel(object):
 			)
 		]
 
-		for spotted in spotteds:
-			if spotted['anonymity']:
-				spotted['userId'] = None
+		if not locationOnly:
+			for spotted in spotteds:
+				if spotted['anonymity']:
+					spotted['userId'] = None
 
 		return spotteds
 		
@@ -134,20 +135,20 @@ class UserModel(object):
 		facebookDate = None
 		googleDate = None
 		fullName = None
-		profilPictureURL = None
+		profilePictureURL = None
 
 		if not facebookToken == None:
 			facebookId = facebookToken['user_id']
 			url = "https://graph.facebook.com/{facebookId}?fields=name,picture&access_token={accessToken}"
 			res = urllib2.urlopen(url.format(facebookId=facebookId,accessToken=facebookToken['token']))
 			data = json.loads(res.read())
-			profilPictureURL = data['picture']['data']['url']
+			profilePictureURL = data['picture']['data']['url']
 			fullName = data['name']
 			facebookDate = datetime.datetime.utcnow()
 		
 		if not googleToken == None:
 			googleId = googleToken['sub']
-			profilPictureURL = googleToken['picture']
+			profilePictureURL = googleToken['picture']
 			fullName = googleToken['name']
 			googleDate = datetime.datetime.utcnow()
 
@@ -159,7 +160,7 @@ class UserModel(object):
 					'facebookId': facebookId,
 					'googleId': googleId,
 					'fullName': fullName,
-					'profilPictureURL': profilPictureURL,
+					'profilePictureURL': profilePictureURL,
 					'disabled': False,
 					'creationDate' : datetime.datetime.utcnow(),
 					'facebookDate' : facebookDate,
@@ -231,7 +232,7 @@ class UserModel(object):
 			userId = ObjectId(userId)
 
 		if publicInfo:
-			projection={'_id': 0, 'profilPictureURL': 1, 'fullName': 1}
+			projection={'_id': 0, 'profilePictureURL': 1, 'fullName': 1}
 
 		return UserModel._getUser(filters={'_id': userId}, projection=projection)
 
