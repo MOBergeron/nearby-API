@@ -64,12 +64,14 @@ class SpottedModel(object):
 		projection['_id'] = True
 		projection['location'] = True
 		projection['creationDate'] = True
+		limit = 1000
 
 		if not locationOnly:
 			projection['anonymity'] = True
 			projection['archived'] = True
 			projection['message'] = True
 			projection['userId'] = True
+			limit = 200
 
 		spotteds = [spotted for spotted in mongo.db.spotteds.find(
 				{
@@ -91,7 +93,7 @@ class SpottedModel(object):
 						}
 					}
 				},
-				limit=200,
+				limit=limit,
 				projection=projection,
 				sort=[('creationDate', DESCENDING)]
 			)
