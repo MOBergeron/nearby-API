@@ -205,6 +205,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 // locationOnly is True
 [{
     "_id": "58a6267ce66036254c9518f8",
+    "creationDate":"2017-02-18T23:37:43.690000+00:00",
     "location": {
         "type": "Point",
         "coordinates": [
@@ -214,6 +215,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
     },
 }, {
     "_id": "58a6267ce66036254c9518f8",
+    "creationDate":"2017-02-18T23:37:43.690000+00:00",
     "location": {
         "type": "Point",
         "coordinates": [
