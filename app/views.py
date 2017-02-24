@@ -254,10 +254,8 @@ def spotteds():
 @app.route("/v1/spotteds/<userId>", methods=['GET'])
 @requireAuthenticate(acceptGuest=False)
 def spottedsByUserId(userId):
-	
 	# Returns all spotteds to a specific userId
 	if userId and (validateObjectId(userId) or userId == 'me'):
-		
 		res = None
 		if userId == 'me':
 			form = GetMySpottedsForm(request.args)
@@ -272,5 +270,24 @@ def spottedsByUserId(userId):
 
 		if type(res) == list:
 			return Response(json.dumps(res, cls=CustomJSONEncoder), status=200, mimetype="application/json")
+
+	return abort(400)
+
+@app.route("/v1/user/<userId>", methods=['GET'])
+@cross_origin(origin="*")
+@requireAuthenticate(acceptGuest=False)
+def userByUserId(userId):
+	# Returns info about a specific user
+	if userId and (validateObjectId(userId) or userId == 'me'):
+		user = None
+		if userId == 'me':
+			user = UserModel.getUser(g.currentUser['_id'])
+		elif str(g.currentUser['_id'])  == userId:
+			user = UserModel.getUser(userId)
+		else:
+			user = UserModel.getUser(userId, publicInfo=True)
+
+		if user:
+			return Response(json.dumps(user, cls=CustomJSONEncoder), status=200, mimetype="application/json")
 
 	return abort(400)

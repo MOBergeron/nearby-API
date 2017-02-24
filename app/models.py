@@ -149,7 +149,11 @@ class UserModel(object):
 
 			insert = {
 				'disabled': False,
-				'creationDate' : creationDate
+				'creationDate' : creationDate,
+				'googleDate' : None,
+				'googleId' : None,
+				'facebookDate' : None,
+				'facebookId' : None
 			}
 
 			if not facebookToken is None:
@@ -167,7 +171,7 @@ class UserModel(object):
 				insert['profilePictureURL'] = googleToken['picture']
 				insert['fullName'] = googleToken['name']
 
-			if 'facebookId' in insert or 'googleId' in insert:
+			if not insert['facebookId'] is None or not insert['googleId'] is None:
 				userId = mongo.db.users.insert_one(insert).inserted_id
 
 		return userId
@@ -233,8 +237,9 @@ class UserModel(object):
 		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
 
+		projection = None
 		if publicInfo:
-			projection={'_id': 0, 'profilePictureURL': 1, 'fullName': 1}
+			projection = {'_id': 0, 'profilePictureURL': 1, 'fullName': 1}
 
 		return UserModel._getUser(filters={'_id': userId}, projection=projection)
 
