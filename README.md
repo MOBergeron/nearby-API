@@ -98,7 +98,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 * **Success Response**
   
-  * **Code:** 200
+  * **Code:** 200 OK
   * **Content:** 
 ```json
 {
@@ -172,7 +172,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 * **Success Response**
   
-  * **Code:** 200
+  * **Code:** 200 OK
   * **Content:** 
 ```json
 // Note userId is null when anonym is True
@@ -272,7 +272,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 * **Success Response**
   
-  * **Code:** 200
+  * **Code:** 200 OK
   * **Content:** 
 ```json
 [{
@@ -349,7 +349,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 * **Success Response**
   
-  * **Code:** 200
+  * **Code:** 200 OK
   * **Content:** 
 ```json
 // Note userId is null when anonym is True
@@ -421,7 +421,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 * **Success Response**
   
-  * **Code:** 200
+  * **Code:** 200 OK
   * **Content:** 
 ```json
 {
@@ -474,7 +474,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 * **Success Response**
   
-  * **Code:** 200
+  * **Code:** 200 OK
   * **Content:** 
 ```json
 {
@@ -534,13 +534,13 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 * **Success Response**
   
-  * **Code:** 201
+  * **Code:** 201 CREATED
   * **Content:** `{"result": "Created"}`
   * **Meaning:** A new account has been created and the login was successful
   
   OR
   
-  * **Code:** 200
+  * **Code:** 200 OK
   * **Content:** `{"result": "OK"}`
   * **Meaning:** The account already existed and the login was successful
  
@@ -592,7 +592,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 * **Success Response**
   
-  * **Code:** 201
+  * **Code:** 201 CREATED
   * **Content:** `{"result" : "fe127933-f9fa-4189-b0e3-1ebb828c1714"}`
   * **Meaning:** A Spotted has been created. The result is the Spotted ID.
  
@@ -632,7 +632,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 * **Success Response**
   
-  * **Code:** 200
+  * **Code:** 200 OK
   * **Content:** `{"result": "OK"}`
   * **Meaning:** The account was successfully disabled.
  
@@ -676,7 +676,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 * **Success Response**
   
-  * **Code:** 200
+  * **Code:** 200 OK
   * **Content:** `{"result": "OK"}`
   * **Meaning:** Facebook account was successfully linked to Nearby account.
  
@@ -688,7 +688,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   OR
 
-  * **Code:** 401 Unauthorized
+  * **Code:** 401 UNAUTHORIZED
   * **Content:** `{"error" : "Unauthorized"}`
   * **Meaning:** Couldn't authenticate the Facebook ID with Facebook token.
 
@@ -732,7 +732,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 * **Success Response**
   
-  * **Code:** 200
+  * **Code:** 200 OK
   * **Content:** `{"result": "OK"}`
   * **Meaning:** Google account was successfully linked to Nearby account.
  
@@ -744,7 +744,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
   OR
 
-  * **Code:** 401 Unauthorized
+  * **Code:** 401 UNAUTHORIZED
   * **Content:** `{"error" : "Unauthorized"}`
   * **Meaning:** Couldn't authenticate the Google ID with Google token.
 
@@ -788,7 +788,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 * **Success Response**
   
-  * **Code:** 200
+  * **Code:** 200 OK
   * **Content:** `{"result": "OK"}`
   * **Meaning:** Facebook Nearby account was successfully merged to Google Nearby account.
  
@@ -844,7 +844,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 * **Success Response**
   
-  * **Code:** 200
+  * **Code:** 200 OK
   * **Content:** `{"result": "OK"}`
   * **Meaning:** Google Nearby account was successfully merged to Facebook Nearby account.
  
