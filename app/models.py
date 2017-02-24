@@ -4,11 +4,14 @@ import urllib2
 import datetime
 
 from bson import ObjectId
+from flask import g
 from flask_pymongo import DESCENDING
 from oauth2client import client, crypt
+from uuid import uuid4
 
 from app import mongo
 from app.s3connection import S3Connection
+from app.utils import validateUUID
 
 class SpottedModel(object):
 
@@ -50,7 +53,7 @@ class SpottedModel(object):
 		
 		spotted = mongo.db.spotteds.find_one({'_id': spottedId, 'archived': False}, projection={'archived': False})
 
-		if spotted and spotted['anonymity']:
+		if spotted and spotted['anonymity'] and not g.currentUser['_id'] == spotted['userId']:
 			spotted['userId'] = None
 		
 		return spotted
@@ -150,10 +153,8 @@ class UserModel(object):
 			insert = {
 				'disabled': False,
 				'creationDate' : creationDate,
-				'googleDate' : None,
-				'googleId' : None,
 				'facebookDate' : None,
-				'facebookId' : None
+				'googleDate' : None
 			}
 
 			if not facebookToken is None:
@@ -164,14 +165,18 @@ class UserModel(object):
 				data = json.loads(res.read())
 				insert['profilePictureURL'] = data['picture']['data']['url']
 				insert['fullName'] = data['name']
+			else:
+				insert['facebookId'] = str(uuid4())
 			
 			if not googleToken is None:
 				insert['googleDate'] = creationDate
 				insert['googleId'] = googleToken['sub']
 				insert['profilePictureURL'] = googleToken['picture']
 				insert['fullName'] = googleToken['name']
+			else:
+				insert['googleId'] = str(uuid4())
 
-			if not insert['facebookId'] is None or not insert['googleId'] is None:
+			if not insert['facebookDate'] == insert['googleDate']:
 				userId = mongo.db.users.insert_one(insert).inserted_id
 
 		return userId
@@ -193,7 +198,13 @@ class UserModel(object):
 
 	@staticmethod
 	def _getUser(filters, projection=None):
-		return mongo.db.users.find_one(filters, projection=projection)
+		user = mongo.db.users.find_one(filters, projection=projection)
+		if user:
+			if user['facebookDate'] is None:
+				user['facebookId'] = None
+			if user['googleDate'] is None:
+				user['googleId'] = None
+		return user
 
 	@staticmethod
 	def _isDisabled(filters):
