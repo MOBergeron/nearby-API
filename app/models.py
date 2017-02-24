@@ -200,9 +200,9 @@ class UserModel(object):
 	def _getUser(filters, projection=None):
 		user = mongo.db.users.find_one(filters, projection=projection)
 		if user:
-			if user['facebookDate'] is None:
+			if 'facebookDate' in user and user['facebookDate'] is None:
 				user['facebookId'] = None
-			if user['googleDate'] is None:
+			if 'googleDate' in user and user['googleDate'] is None:
 				user['googleId'] = None
 		return user
 
