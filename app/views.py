@@ -187,6 +187,10 @@ def mergeFacebook():
 				facebookUser = FacebookModel.getUser(form.facebookId.data)
 				if UserModel.mergeUsers(g.currentUser['_id'], facebookUser['_id']):
 					return json.dumps({'result':'OK'}), 200
+			else:
+				return abort(404)
+		else:
+			return abort(401)
 
 	return abort(400)
 
@@ -205,6 +209,10 @@ def mergeGoogle():
 				googleUser = GoogleModel.getUser(form.googleId.data)
 				if UserModel.mergeUsers(g.currentUser['_id'], googleUser['_id']):
 					return json.dumps({'result':'OK'}), 200
+			else:
+				return abort(404)
+		else:
+			return abort(401)
 
 	return abort(400)
 
@@ -289,5 +297,7 @@ def userByUserId(userId):
 
 		if user:
 			return Response(json.dumps(user, cls=CustomJSONEncoder), status=200, mimetype="application/json")
+		
+		return abort(404)
 
 	return abort(400)
