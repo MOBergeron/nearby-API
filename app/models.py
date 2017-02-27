@@ -270,15 +270,15 @@ class UserModel(object):
 		and (not userToMerge['facebookId'] and primaryUser['facebookId'] and not primaryUser['googleId'] \
 		or not userToMerge['googleId'] and primaryUser['googleId'] and not primaryUser['facebookId']):
 			if not userToMerge['facebookId'] and primaryUser['facebookId']:
-				if mongo.db.users.update_one({'_id': primaryUserId}, {'facebookId': primaryUser['facebookId'], 'facebookDate': datetime.datetime.utcnow()}).modified_count == 1:
+				if mongo.db.users.update_one({'_id': primaryUserId}, {'$set': {'facebookId': primaryUser['facebookId'], 'facebookDate': datetime.datetime.utcnow()}}).modified_count == 1:
 					res = True
 
 			elif not userToMerge['googleId'] and primaryUser['googleId']:
-				if mongo.db.users.update_one({'_id': primaryUserId}, {'googleId': primaryUser['googleId'], 'googleDate': datetime.datetime.utcnow()}).modified_count == 1:
+				if mongo.db.users.update_one({'_id': primaryUserId}, {'$set': {'googleId': primaryUser['googleId'], 'googleDate': datetime.datetime.utcnow()}}).modified_count == 1:
 					res = True
 
 			if res:
-				mongo.db.spotteds.update_many({'userId': userIdToMerge}, {'userId': primaryUserId})
+				mongo.db.spotteds.update_many({'userId': userIdToMerge}, {'$set': {'userId': primaryUserId}})
 
 		return res
 
