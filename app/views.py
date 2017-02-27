@@ -224,7 +224,7 @@ def spotted(spottedId):
 	if spottedId and validateObjectId(spottedId):
 		spotted = SpottedModel.getSpottedBySpottedId(spottedId)
 		if spotted:
-			if not spotted['anonymity']:
+			if not spotted['anonymity'] or spotted['userId'] == g.currentUser['_id']:
 				user = UserModel.getUser(spotted['userId'], publicInfo=True)
 				if user:
 					spotted.update(user)
