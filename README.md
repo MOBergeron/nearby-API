@@ -878,7 +878,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 First, you have to install python 2.7. It is quite easy depending on your OS.
 
 Then, run the following command to install dependencies : 
-`pip install flask flask-wtf flask-pymongo flask-cors google-api-python-client boto3`
+`pip install flask flask-wtf flask-pymongo flask-cors google-api-python-client boto`
 
 Make `run.py` executable with `chmod +x run.py`.
 
