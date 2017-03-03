@@ -291,7 +291,7 @@ def userByUserId(userId):
 		user = None
 		if userId == 'me' and g.currentUser:
 			user = UserModel.getUser(g.currentUser['_id'])
-		elif str(g.currentUser['_id'])  == userId:
+		elif g.currentUser and str(g.currentUser['_id'])  == userId:
 			user = UserModel.getUser(userId)
 		else:
 			user = UserModel.getUser(userId, publicInfo=True)
