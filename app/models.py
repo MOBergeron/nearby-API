@@ -53,7 +53,7 @@ class SpottedModel(object):
 		
 		spotted = mongo.db.spotteds.find_one({'_id': spottedId, 'archived': False}, projection={'archived': False})
 
-		if spotted and spotted['anonymity'] and not g.currentUser['_id'] == spotted['userId']:
+		if spotted and spotted['anonymity'] and (not g.currentUser or not g.currentUser['_id'] == spotted['userId']):
 			spotted['userId'] = None
 		
 		return spotted
