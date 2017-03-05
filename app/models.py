@@ -71,8 +71,8 @@ class SpottedModel(object):
 
 		if not locationOnly:
 			projection['anonymity'] = True
-			projection['archived'] = True
 			projection['message'] = True
+			projection['pictureURL'] = True
 			projection['userId'] = True
 			limit = 200
 
