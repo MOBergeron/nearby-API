@@ -21,6 +21,7 @@ def requireAuthenticate(acceptGuest):
 			if auth:
 				if acceptGuest and request.headers['Service-Provider'] == 'Guest' and auth.username == app.config['GUEST_ID']:
 					if auth.password == app.config['GUEST_TOKEN']:
+						g.currentUser = None
 						g.loginWith = 'Guest'
 						return f(*args, **kwargs)
 				else:
@@ -224,7 +225,7 @@ def spotted(spottedId):
 	if spottedId and validateObjectId(spottedId):
 		spotted = SpottedModel.getSpottedBySpottedId(spottedId)
 		if spotted:
-			if not spotted['anonymity'] or spotted['userId'] == g.currentUser['_id']:
+			if not spotted['anonymity'] or not g.loginWith == 'Guest' and spotted['userId'] == g.currentUser['_id']:
 				user = UserModel.getUser(spotted['userId'], publicInfo=True)
 				if user:
 					spotted.update(user)
@@ -283,14 +284,14 @@ def spottedsByUserId(userId):
 
 @app.route("/v1/user/<userId>", methods=['GET'])
 @cross_origin(origin="*")
-@requireAuthenticate(acceptGuest=False)
+@requireAuthenticate(acceptGuest=True)
 def userByUserId(userId):
 	# Returns info about a specific user
 	if userId and (validateObjectId(userId) or userId == 'me'):
 		user = None
-		if userId == 'me':
+		if userId == 'me' and g.currentUser:
 			user = UserModel.getUser(g.currentUser['_id'])
-		elif str(g.currentUser['_id'])  == userId:
+		elif g.currentUser and str(g.currentUser['_id'])  == userId:
 			user = UserModel.getUser(userId)
 		else:
 			user = UserModel.getUser(userId, publicInfo=True)
