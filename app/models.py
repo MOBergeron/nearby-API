@@ -104,7 +104,7 @@ class SpottedModel(object):
 
 		if not locationOnly:
 			for spotted in spotteds:
-				if spotted['anonymity']:
+				if spotted['anonymity'] and (not g.currentUser or not g.currentUser['_id'] == spotted['userId']):
 					spotted['userId'] = None
 
 		return spotteds
