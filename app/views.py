@@ -73,6 +73,11 @@ def gone(e):
 def internalServerError(e):
 	return Response(json.dumps({'error':'Internal Server Error'}), status=500, mimetype="application/json")
 
+@app.route("/", methods=['GET'])
+def index():
+	# This route is mandatory for the load balancer
+	return Response(json.dumps({'result': 'OK'}, cls=CustomJSONEncoder), status=200, mimetype="application/json")
+
 @app.route("/v1/spotted", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
 def createSpotted():

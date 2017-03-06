@@ -32,7 +32,7 @@ if __name__=='__main__':
 			print("Missing AWS keys")
 			exit(0)
 
-	if args.ssl or ('NEARBY_SETTINGS' in environ and environ['NEARBY_SETTINGS'] in ['prod', 'production']):
+	if args.ssl:
 		if path.exists(path.join(path.dirname(__file__), "cert.pem")) and path.exists(path.join(path.dirname(__file__), "privkey.pem")):
 			sslContext = ('cert.pem','privkey.pem')
 			print("Certificates were found. SSL is enabled.")
