@@ -22,8 +22,7 @@ class SpottedModel(object):
 		"""
 		pictureURL = None
 		if not picture is None:
-			pictureCompressed = Compression().compress(picture)
-			pictureURL = S3Connection().saveFile(pictureCompressed)
+			pictureURL = S3Connection().saveFile(Compression().compress(picture))
 
 		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)

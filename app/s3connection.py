@@ -19,7 +19,6 @@ class S3Connection():
 		self.__bucket = connection.get_bucket("spottednearby")
 
 	def saveFile(self, file):
-		#_, extension = os.path.splitext(file.filename)
 		uuid = uuid4()
 		filename = "{filename}{extension}".format(filename=uuid, extension=self.__EXTENSION)
 		k = Key(self.__bucket)

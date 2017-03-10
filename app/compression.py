@@ -3,11 +3,9 @@ import cStringIO
 from PIL import Image
 from app.utils import Singleton
 
-
-
-class Compression():
+class Compression(object):
     __metaclass__ = Singleton
-    
+
     __MAXSIZE = 1440, 1080
 
     def compress(self, file):
