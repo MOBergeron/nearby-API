@@ -12,6 +12,7 @@ from uuid import uuid4
 from app import mongo
 from app.s3connection import S3Connection
 from app.utils import validateUUID
+from app.compression import Compression
 
 class SpottedModel(object):
 
@@ -21,7 +22,8 @@ class SpottedModel(object):
 		"""
 		pictureURL = None
 		if not picture is None:
-			pictureURL = S3Connection().saveFile(picture)
+			pictureCompressed = Compression().compress(picture)
+			pictureURL = S3Connection().saveFile(pictureCompressed)
 
 		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
@@ -50,12 +52,12 @@ class SpottedModel(object):
 		"""
 		if not isinstance(spottedId, ObjectId):
 			spottedId = ObjectId(spottedId)
-		
+
 		spotted = mongo.db.spotteds.find_one({'_id': spottedId, 'archived': False}, projection={'archived': False})
 
 		if spotted and spotted['anonymity'] and (not g.currentUser or not g.currentUser['_id'] == spotted['userId']):
 			spotted['userId'] = None
-		
+
 		return spotted
 
 	@staticmethod
@@ -108,14 +110,14 @@ class SpottedModel(object):
 					spotted['userId'] = None
 
 		return spotteds
-		
+
 	@staticmethod
 	def getMySpotteds(userId, skip=None, since=None):
 		"""Gets a list of spotteds by using the userId of a specific user.
 		"""
 		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
-		
+
 		if skip is None:
 			skip = 0
 
@@ -132,9 +134,9 @@ class SpottedModel(object):
 		"""
 		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
-		
+
 		spotteds = [spotted for spotted in mongo.db.spotteds.find({'userId': userId, 'anonymity': False, 'archived': False}, limit=20, projection={'archived': False}, sort=[('creationDate', DESCENDING)])]
-		
+
 		for spotted in spotteds:
 			if spotted['anonymity']:
 				spotted['userId'] = None
@@ -167,7 +169,7 @@ class UserModel(object):
 				insert['fullName'] = data['name']
 			else:
 				insert['facebookId'] = str(uuid4())
-			
+
 			if not googleToken is None:
 				insert['googleDate'] = creationDate
 				insert['googleId'] = googleToken['sub']
@@ -369,7 +371,7 @@ class GoogleModel(UserModel):
 		except crypt.AppIdentityError as e:
 			print(e)
 			tokenInfo = False
-		
+
 		return tokenInfo
 
 	@staticmethod
