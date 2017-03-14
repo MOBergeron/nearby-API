@@ -6,11 +6,11 @@ from app.utils import Singleton
 class Compression(object):
     __metaclass__ = Singleton
 
-    __MAXSIZE = 1440, 1080
+    __MAXSIZE = 1440, 1440
 
     def compress(self, file):
         im = Image.open(file)
         im.thumbnail(self.__MAXSIZE, Image.ANTIALIAS)
-        compressedImg = cStringIO.StringIO()
-        im.save(compressedImg, 'JPEG', quality=75)
-        return compressedImg.getvalue()
+        newIm = cStringIO.StringIO()
+        im.save(newIm, 'JPEG')
+        return newIm.getvalue()

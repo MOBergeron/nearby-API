@@ -21,8 +21,10 @@ class SpottedModel(object):
 		"""Creates a spotted.
 		"""
 		pictureURL = None
+		thumbnailURL = None
 		if not picture is None:
-			pictureURL = S3Connection().saveFile(Compression().compress(picture))
+			pictureURL = S3Connection().saveFile(picture)
+			thumbnailURL = S3Connection().saveFile(Compression().compress(picture))
 
 		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
@@ -41,6 +43,7 @@ class SpottedModel(object):
 				},
 				'creationDate': datetime.datetime.utcnow(),
 				'pictureURL': pictureURL,
+				'thumbnailURL': thumbnailURL,
 				'message': message
 			}
 		).inserted_id
@@ -74,6 +77,7 @@ class SpottedModel(object):
 			projection['anonymity'] = True
 			projection['message'] = True
 			projection['pictureURL'] = True
+			projection['thumbnailURL'] = True
 			projection['userId'] = True
 			limit = 200
 
