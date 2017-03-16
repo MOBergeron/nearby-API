@@ -5,7 +5,7 @@ from functools import wraps
 
 from app import app, mongo
 
-from app.forms import ContactForm, CreateSpottedForm, GetMySpottedsForm, GetSpottedsForm, MergeFacebookForm, MergeGoogleForm, LinkFacebookForm, LinkGoogleForm
+from app.forms import CreateSpottedForm, GetMySpottedsForm, GetSpottedsForm, MergeFacebookForm, MergeGoogleForm, LinkFacebookForm, LinkGoogleForm
 from app.models import SpottedModel, UserModel, FacebookModel, GoogleModel
 from app.utils import CustomJSONEncoder, validateObjectId
 

@@ -10,7 +10,6 @@ if __name__=='__main__':
 
 	parser.add_argument('--host', dest='host', default=None)
 	parser.add_argument('--port', dest='port', default=None)
-	parser.add_argument('-s', '--ssl', action='store_true', dest='ssl', default=False)
 
 	args = parser.parse_args()
 	
@@ -32,21 +31,10 @@ if __name__=='__main__':
 			print("Missing AWS keys")
 			exit(0)
 
-	if args.ssl:
-		if path.exists(path.join(path.dirname(__file__), "cert.pem")) and path.exists(path.join(path.dirname(__file__), "privkey.pem")):
-			sslContext = ('cert.pem','privkey.pem')
-			print("Certificates were found. SSL is enabled.")
-		else:
-			print("Certificates weren't found.")
-			exit(0)
-	else:
-		sslContext = None
-
 	# Start the app
 	app.run(debug=app.config['DEBUG'],
 		host=host,
 		port=port,
-		ssl_context=sslContext,
 		use_reloader=False,
 		threaded=True)
 

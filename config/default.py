@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-import os
-
 DEBUG = False
 WTF_CSRF_ENABLED = False
 

@@ -4,7 +4,7 @@ import cgi
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import BooleanField, DateTimeField, DecimalField, IntegerField, StringField, TextAreaField
-from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional, ValidationError
+from wtforms.validators import DataRequired, Length, NumberRange, Optional, ValidationError
 
 # Constants
 MINIMUM_LONGITUDE = -180
@@ -13,8 +13,7 @@ MAXIMUM_LONGITUDE = 180
 MINIMUM_LATITUDE = -90
 MAXIMUM_LATITUDE = 90
 
-MAXIMUM_CONTACT_MESSAGE_LENGTH = 1000
-MAXIMUM_SPOTTED_MESSAGE_LENGTH = 5000
+MAXIMUM_SPOTTED_MESSAGE_LENGTH = 1000
 
 DEFAULT_LOCATION_ONLY = False
 
@@ -29,10 +28,6 @@ def validateBoolean(form, field):
 			field.data = False
 		else:
 			raise ValidationError("Anonymity must be true or false.")
-
-class ContactForm(FlaskForm):
-	email = StringField('Email', validators=[DataRequired(), Email()])
-	message = TextAreaField('Message', validators=[DataRequired(), Length(max=MAXIMUM_CONTACT_MESSAGE_LENGTH), escapeSpecialCharacters])
 
 class CreateSpottedForm(FlaskForm):
 	anonymity = StringField('anonymity', validators=[DataRequired(), validateBoolean])

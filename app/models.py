@@ -3,16 +3,14 @@ import json
 import urllib2
 import datetime
 
-from bson import ObjectId
 from flask import g
+from uuid import uuid4
+from bson import ObjectId
 from flask_pymongo import DESCENDING
 from oauth2client import client, crypt
-from uuid import uuid4
 
 from app import mongo
-from app.s3connection import S3Connection
-from app.utils import validateUUID
-from app.compression import Compression
+from app.utils import S3Connection, createThumbnail
 
 class SpottedModel(object):
 
@@ -24,7 +22,7 @@ class SpottedModel(object):
 		thumbnailURL = None
 		if not picture is None:
 			pictureURL = S3Connection().saveFile(picture.read())
-			thumbnailURL = S3Connection().saveFile(Compression().compress(picture))
+			thumbnailURL = S3Connection().saveFile(createThumbnail(picture))
 
 		if not isinstance(userId, ObjectId):
 			userId = ObjectId(userId)
