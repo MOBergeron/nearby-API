@@ -3,29 +3,27 @@
 # Nearby-API
 
 ### Contents
-- [API Documentation] (#api-documentation)
-  - [Error Messages] (#error-messages)
-  - GET
-    - [Get a spotted] (#get-a-spotted)
-    - [Get Spotteds] (#get-spotteds)
-    - [Get my Spotteds] (#get-my-spotteds)
-    - [Get Spotteds by user ID] (#get-spotteds-by-user-id)
-    - [Get a User] (#get-a-user)
-    - [Get my User] (#get-my-user)
-  - POST
-    - [Create Account and Authentication] (#create-account-and-authentication)
-    - [Create a spotted] (#create-a-spotted)
-    - [Disable account] (#disable-account)
-    - [Link Facebook] (#link-facebook)
-    - [Link Google] (#link-google)
-    - [Merge Facebook] (#merge-facebook)
-    - [Merge Google] (#merge-google)
-- [Requirements] (#requirements)
-- [Installation] (#installation)
+- [API Documentation](#api-documentation)
+  - [Error Messages](#error-messages)
+  - [GET](#get)
+    - [Get a spotted](#get-a-spotted)
+    - [Get Spotteds](#get-spotteds)
+    - [Get my Spotteds](#get-my-spotteds)
+    - [Get Spotteds by user ID](#get-spotteds-by-user-id)
+    - [Get a User](#get-a-user)
+    - [Get my User](#get-my-user)
+  - [POST](#post)
+    - [Create Account and Authentication](#create-account-and-authentication)
+    - [Create a spotted](#create-a-spotted)
+    - [Disable account](#disable-account)
+    - [Link Facebook](#link-facebook)
+    - [Link Google](#link-google)
+    - [Merge Facebook](#merge-facebook)
+    - [Merge Google](#merge-google)
+- [Requirements](#requirements)
+- [Installation](#installation)
 
 ## API Documentation
-
-The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
 ### Error Messages
 ----
@@ -106,6 +104,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
    "creationDate":"2017-02-18T23:37:43.690000+00:00",
    "userId":"58a6044be66036180128f034",
    "pictureURL":null,
+   "thumbnailURL":null,
    "location":{
       "type":"Point",
       "coordinates":[
@@ -202,6 +201,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
     },
     "creationDate": "2017-02-17T05:05:16.930000+00:00",
     "pictureURL": "https://s3.ca-central-1.amazonaws.com/spottednearby/41c8f63a-3f61-44d1-9d7a-ff3638f6c292.jpg",
+    "thumbnailURL":"https://s3.ca-central-1.amazonaws.com/spottednearby/ca81052b-7cfe-491d-8ca5-75e7b1d3f581.jpg",
     "message": "Lorem Ipsum2"
 }]
 ```
@@ -288,6 +288,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
     },
     "creationDate": "2017-02-17T05:05:16.930000+00:00",
     "pictureURL": "https://s3.ca-central-1.amazonaws.com/spottednearby/41c8f63a-3f61-44d1-9d7a-ff3638f6c292.jpg",
+    "thumbnailURL":"https://s3.ca-central-1.amazonaws.com/spottednearby/ca81052b-7cfe-491d-8ca5-75e7b1d3f581.jpg",
     "message": "Lorem Ipsum1"
 }, {
     "_id": "58a6267ce66036254c9518f8",
@@ -302,6 +303,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
     },
     "creationDate": "2017-02-17T05:05:16.930000+00:00",
     "pictureURL": "https://s3.ca-central-1.amazonaws.com/spottednearby/41c8f63a-3f61-44d1-9d7a-ff3638f6c292.jpg",
+    "thumbnailURL":"https://s3.ca-central-1.amazonaws.com/spottednearby/ca81052b-7cfe-491d-8ca5-75e7b1d3f581.jpg",
     "message": "Lorem Ipsum2"
 }]
 ```
@@ -366,6 +368,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
     },
     "creationDate": "2017-02-17T05:05:16.930000+00:00",
     "pictureURL": "https://s3.ca-central-1.amazonaws.com/spottednearby/41c8f63a-3f61-44d1-9d7a-ff3638f6c292.jpg",
+    "thumbnailURL":"https://s3.ca-central-1.amazonaws.com/spottednearby/ca81052b-7cfe-491d-8ca5-75e7b1d3f581.jpg",
     "message": "Lorem Ipsum1"
 }, {
     "_id": "58a6267ce66036254c9518f8",
@@ -380,6 +383,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
     },
     "creationDate": "2017-02-17T05:05:16.930000+00:00",
     "pictureURL": "https://s3.ca-central-1.amazonaws.com/spottednearby/41c8f63a-3f61-44d1-9d7a-ff3638f6c292.jpg",
+    "thumbnailURL":"https://s3.ca-central-1.amazonaws.com/spottednearby/ca81052b-7cfe-491d-8ca5-75e7b1d3f581.jpg",
     "message": "Lorem Ipsum2"
 }]
 ```
