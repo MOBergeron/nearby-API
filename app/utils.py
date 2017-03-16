@@ -15,7 +15,7 @@ def validateObjectId(objId):
 	return ObjectId.is_valid(objId)
 
 # Create thumbnail image from image.
-def createThumbnail(self, image):
+def createThumbnail(image):
 	im = Image.open(image)
 	im.thumbnail((1440,1440), Image.ANTIALIAS)
 	thumbnailIm = cStringIO.StringIO()
