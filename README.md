@@ -2,7 +2,7 @@
 
 # Nearby-API
 
-###Contents
+### Contents
 - [API Documentation] (#api-documentation)
   - [Error Messages] (#error-messages)
   - GET
@@ -27,7 +27,7 @@
 
 The base address to join the dev API is : https://nbyapi.mo-bergeron.com
 
-###Error Messages
+### Error Messages
 ----
   The following error messages can be encountered when calling any route.
   
@@ -67,8 +67,8 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Internal Server Error"}`
   * **Meaning:** Something went wrong in the server. Sorry about that.<br />
 
-##GET
-###Get a Spotted
+## GET
+### Get a Spotted
 ----
   This is the call to get a Spotted message.
 
@@ -132,7 +132,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Not Found"}`
   * **Meaning:** The requested Spotted was not found.
 
-###Get Spotteds
+### Get Spotteds
 ----
   This is the call to get Spotted messages.
 
@@ -238,7 +238,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Bad Request"}`
   * **Meaning:** Validation error.
 
-###Get my Spotteds
+### Get my Spotteds
 ----
   This is the call to get my Spotted messages.
 
@@ -319,7 +319,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Not Found"}`
   * **Meaning:** The requested Spotted was not found.
 
-###Get Spotteds by user ID
+### Get Spotteds by user ID
 ----
   This is the call to get Spotted messages with a user ID.
 
@@ -391,7 +391,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Bad Request"}`
   * **Meaning:** The {userId} was not UUID validated.
   
-###Get a User
+### Get a User
 ----
   This is the call to get a User.
 
@@ -444,7 +444,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Not Found"}`
   * **Meaning:** The {userId} was not found.
 
-###Get my User
+### Get my User
 ----
   This is the call to get my User.
 
@@ -503,8 +503,8 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Not Found"}`
   * **Meaning:** The {userId} was not found.
 
-##POST
-###Create Account and Authentication
+## POST
+### Create Account and Authentication
 ----
   This is the main call to be able to authenticate with the API.
 
@@ -550,7 +550,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Bad Request"}`
   * **Meaning:** Not supposed to happen
 
-###Create a Spotted
+### Create a Spotted
 ----
   This is the call to create a new Spotted message.
 
@@ -602,7 +602,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Bad Request"}`
   * **Meaning:** The form wasn't valid OR your user wasn't found in the database.
   
-###Disable Account
+### Disable Account
 ----
   This is the call to disable your account.
 
@@ -642,7 +642,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"result": "Bad Request"}`
   * **Meaning:** The account was not successfully disabled.
 
-###Link Facebook
+### Link Facebook
 ----
   This is the call to link a Facebook to an existing Nearby account linked with Google
 
@@ -698,7 +698,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Forbidden"}`
   * **Meaning:** That Facebook account already exists in Nearby system OR that Nearby account is already linked to a Facebook account. It can't be linked.
 
-###Link Google
+### Link Google
 ----
   This is the call to link a Google to an existing Nearby account linked with Facebook
 
@@ -754,7 +754,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Forbidden"}`
   * **Meaning:** That Google account already exists in Nearby system OR that Nearby account is already linked to a Google account. It can't be linked.
 
-###Merge Facebook
+### Merge Facebook
 ----
   This is the call to merge an existing Facebook Nearby account to an existing Google Nearby account.
 
@@ -810,7 +810,7 @@ The base address to join the dev API is : https://nbyapi.mo-bergeron.com
   * **Content:** `{"error" : "Not Found"}`
   * **Meaning:** There is no Facebook Nearby account with that Facebook ID
 
-###Merge Google
+### Merge Google
 ----
   This is the call to merge an existing Google Nearby account to an existing Facebook Nearby account.
 
