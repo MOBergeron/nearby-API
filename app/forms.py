@@ -47,6 +47,22 @@ class GetSpottedsForm(FlaskForm):
 	maxLong = DecimalField('maxLong', validators=[DataRequired(), NumberRange(min=MINIMUM_LONGITUDE, max=MAXIMUM_LONGITUDE)])
 	locationOnly = StringField('locationOnly', validators=[validateBoolean], default=DEFAULT_LOCATION_ONLY)
 
+	def validate(self):
+		result = True
+		if not super(GetSpottedsForm, self).validate():
+			result = False
+
+		if result:
+			if self.minLat.data == self.maxLat.data:
+				result = False
+				self.minLat.errors.append('minLat can\'t equals maxLat')
+			if self.minLong.data == self.maxLong.data:
+				result = False
+				self.minLong.errors.append('minLong can\'t equals maxLong')
+
+		return result
+
+
 class MergeFacebookForm(FlaskForm):
 	facebookId = StringField('facebookId', validators=[DataRequired(), escapeSpecialCharacters])
 	token = StringField('token', validators=[DataRequired()])
