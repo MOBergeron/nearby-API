@@ -81,6 +81,8 @@ def index():
 @app.route("/v1/spotted", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
 def createSpotted():
+	"""Create a spotted
+	"""
 	form = CreateSpottedForm()
 	
 	# Creates a spotted according to form data
@@ -100,6 +102,8 @@ def createSpotted():
 @app.route("/v1/disable", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
 def disableAccount():
+	"""Disable the current user account
+	"""
 	if UserModel.disableUser(g.currentUser['_id']):
 		return json.dumps({'result':'OK'}), 200
 
@@ -149,7 +153,11 @@ def linkGoogle():
 
 @app.route("/v1/login", methods=['POST'])
 @requireAuthenticate(acceptGuest=False)
-def loginFacebook():
+def login():
+	"""Login with Facebook or Google.
+		Create an Nearby account if it doesn't exist already
+		Enable a disabled account
+	"""
 	if g.loginWith == 'Facebook':
 		if not FacebookModel.doesUserExist(request.authorization.username):
 			if FacebookModel.createUser(g.facebookToken):
@@ -226,7 +234,8 @@ def mergeGoogle():
 @cross_origin(origin="*")
 @requireAuthenticate(acceptGuest=True)
 def spotted(spottedId):
-	# Returns a specific spotted
+	"""Returns a specific spotted
+	"""
 	if spottedId and validateObjectId(spottedId):
 		spotted = SpottedModel.getSpottedBySpottedId(spottedId)
 		if spotted:
@@ -246,9 +255,10 @@ def spotted(spottedId):
 @cross_origin(origin="*")
 @requireAuthenticate(acceptGuest=True)
 def spotteds():
+	"""Returns all corresponding spotteds according to arguments
+	"""
 	form = GetSpottedsForm(request.args)
 
-	# Returns all corresponding spotteds according to arguments
 	if form.validate():
 		minLat = form.minLat.data
 		minLong = form.minLong.data
@@ -268,7 +278,8 @@ def spotteds():
 @app.route("/v1/spotteds/<userId>", methods=['GET'])
 @requireAuthenticate(acceptGuest=False)
 def spottedsByUserId(userId):
-	# Returns all spotteds to a specific userId
+	"""Returns all spotteds to a specific userId
+	"""
 	if userId and (validateObjectId(userId) or userId == 'me'):
 		res = None
 		if userId == 'me':
@@ -291,7 +302,8 @@ def spottedsByUserId(userId):
 @cross_origin(origin="*")
 @requireAuthenticate(acceptGuest=True)
 def userByUserId(userId):
-	# Returns info about a specific user
+	"""Returns info about a specific user
+	"""
 	if userId and (validateObjectId(userId) or userId == 'me'):
 		user = None
 		if userId == 'me' and g.currentUser:
